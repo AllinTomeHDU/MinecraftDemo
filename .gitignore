@@ -1,0 +1,14 @@
+.vs/
+*.sln
+
+[Bb]inaries/
+**/[Bb]inaries/
+Intermediate/
+**Intermediate/
+
+Build/
+Saved/
+DerivedDataCache/
+
+Config/DefaultEditorPerProjectUserSettings.ini
+Content/Mineprep/

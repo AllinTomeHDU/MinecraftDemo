@@ -1,0 +1,22 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{E0F0BF2A-4382-D8EE-4638-85AE8B0FC2F5}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "MinecraftDemo",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		}
+	]
+}
