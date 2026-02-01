@@ -6,6 +6,8 @@
 #include "MotionMatchingAls/3C/Controller/MMAlsPlayerController.h"
 #include "DemoPlayerController.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftMouseTriggerDelegate);
+
 /**
  * 
  */
@@ -17,13 +19,15 @@ class MINECRAFTDEMO_API ADemoPlayerController : public AMMAlsPlayerController
 public:
 	ADemoPlayerController();
 	
+	UPROPERTY(BlueprintAssignable)
+	FOnLeftMouseTriggerDelegate OnLeftMouseTrigger;
+
 protected:
 	virtual void SetupInputComponent() override;
 
 	void LeftMouseAction();
 	void RightMouseAction();
 
-	void DeleteChunk();
 	void CreateChunk();
 	
 private:
@@ -40,5 +44,5 @@ private:
 	UInputAction* IA_RightMouse;
 
 	UPROPERTY(EditAnywhere)
-	float Reach = 5.f * 100.f;
+	float Reach = 4.f * 100.f;
 };
