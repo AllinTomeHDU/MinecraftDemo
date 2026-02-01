@@ -54,62 +54,63 @@ protected:
 	UFUNCTION()
 	void OnRep_Chr();
 
-private:
+protected:
 	UPROPERTY(ReplicatedUsing = OnRep_Chr)
 	class AMMAlsCharacter* Chr;
 
 	UPROPERTY()
 	class UMMAlsMovementComponent* MoveComp;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Locomotion")
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Locomotion")
 	UInputMappingContext* IMC_Locomotion;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Locomotion")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Locomotion")
 	int32 LocomotionInputsPriority = 1;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Locomotion")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Locomotion")
 	UInputAction* IA_Move;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Locomotion")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Locomotion")
 	UInputAction* IA_Look;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Locomotion")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Locomotion")
 	UInputAction* IA_Gait;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Locomotion")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Locomotion")
 	UInputAction* IA_Stance;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Locomotion")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Locomotion")
 	UInputAction* IA_Aiming;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Locomotion")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Locomotion")
 	UInputAction* IA_Jump;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Debug")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Debug")
 	bool bEnableDebugInputs;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Debug")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Debug")
 	class UInputMappingContext* IMC_Debug;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Debug")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Debug")
 	int32 DebugInputsPriority = 0;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Debug")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Debug")
 	UInputAction* IA_RotationMode;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Debug")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Debug")
 	UInputAction* IA_ViewMode;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Debug")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Debug")
 	UInputAction* IA_ShoulderMode;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Debug")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Debug")
 	UInputAction* IA_OverlayBase;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Debug")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Debug")
 	UInputAction* IA_OverlayPose;
 
-	UPROPERTY(EditAnywhere, Category = "MMAls|Inputs|Debug")
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Debug")
 	UInputAction* IA_Ragdoll;
 };
 

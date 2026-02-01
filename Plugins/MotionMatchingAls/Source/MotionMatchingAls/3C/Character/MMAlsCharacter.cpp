@@ -19,7 +19,16 @@ AMMAlsCharacter::AMMAlsCharacter(const FObjectInitializer& ObjectInitializer)
 	bUseControllerRotationYaw = false;
 
 	GetMesh()->SetRelativeRotation({ 0.0f, -90.0f, 0.0f });
+	GetMesh()->SetRelativeLocation({ 0.0f, 0.0f, -85.0f });
 	GetMesh()->bCastHiddenShadow = true;
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshAsset(
+		TEXT("/MotionMatchingAls/3C/Character/MannequinAssets/UEFN_Mannequins/Meshes/SKM_UEFN_Mannequin.SKM_UEFN_Mannequin")
+	);
+	if (MeshAsset.Succeeded())
+	{
+		GetMesh()->SetSkeletalMesh(MeshAsset.Object);
+	}
 
 	Camera = CreateDefaultSubobject<UMMAlsCameraComponent>(TEXT("MMAlsCamera"));
 	Camera->SetupAttachment(GetMesh());
@@ -68,6 +77,17 @@ void AMMAlsCharacter::BeginPlay()
 void AMMAlsCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (IsValid(Camera) && Camera->GetViewMode() == EMMAlsViewMode::FirstPerson)
+	{
+		const FRotator MeshRot = GetMesh()->GetComponentRotation();
+		const FRotator RootRot = GetMesh()->GetSocketRotation(TEXT("root"));
+		const float DeltaYaw = FRotator::NormalizeAxis(MeshRot.Yaw - RootRot.Yaw);
+		//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("DeltaYaw:%f"), DeltaYaw));
+	
+		// 根据阈值原地旋转
+
+	}
 
 	if (bIsRagdolling)
 	{

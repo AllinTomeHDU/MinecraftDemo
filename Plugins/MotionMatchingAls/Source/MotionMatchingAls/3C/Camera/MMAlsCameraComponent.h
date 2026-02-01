@@ -15,7 +15,8 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnMMAlsActiveAiming, bool);
 /**
  * 
  */
-UCLASS(HideCategories = ("ComponentTick", "Clothing", "Physics", "MasterPoseComponent", "Collision", "AnimationRig", 
+UCLASS(BlueprintType, Blueprintable, 
+	HideCategories = ("ComponentTick", "Clothing", "Physics", "MasterPoseComponent", "Collision", "AnimationRig", 
 	"Lighting", "Deformer", "Rendering", "PathTracing", "HLOD", "Navigation", "VirtualTexture", "SkeletalMesh",
 	"LeaderPoseComponent", "Optimization", "LOD", "MaterialParameters", "TextureStreaming", "Mobile", "RayTracing"))
 class MOTIONMATCHINGALS_API UMMAlsCameraComponent : public USkeletalMeshComponent
@@ -24,6 +25,9 @@ class MOTIONMATCHINGALS_API UMMAlsCameraComponent : public USkeletalMeshComponen
 	
 public:
 	UMMAlsCameraComponent();
+
+	UFUNCTION(BlueprintCallable)
+	void SetTargetAttachedMesh(USkeletalMeshComponent* NewTargetAttachedMesh);
 
 	UFUNCTION(BlueprintPure)
 	void GetViewInfo(FMinimalViewInfo& ViewInfo) const;
@@ -42,6 +46,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetShoulderMode(EMMAlsShoulderMode NewShoulderMode, bool bForce = false);
+
+	UFUNCTION(BlueprintCallable)
+	void SetFPOverrideByCameraLoc(const bool bOverride);
 
 	FOnMMAlsViewModeChanged OnViewModeChangedDelegate;
 	FOnMMAlsShoulderModeChanged OnShoulderModeChangedDelegate;
@@ -79,6 +86,9 @@ private:
 
 	UPROPERTY()
 	class UMMAlsMovementComponent* MoveComp;
+
+	UPROPERTY()
+	class USkeletalMeshComponent* TargetAttachedMesh;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Camera|ViewMode", meta = (AllowPrivateAccess = "true"))
 	EMMAlsViewMode ViewMode = EMMAlsViewMode::ThirdPerson;

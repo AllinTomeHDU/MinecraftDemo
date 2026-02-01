@@ -95,13 +95,14 @@ protected:
 	virtual void OnOverlayBaseChanged(const EMMAlsOverlayBase& PrevOverlayBase);
 	virtual void OnOverlayPoseChanged(const EMMAlsOverlayPose& PrevOverlayPose);
 
-private:
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MMAls|Camera", meta = (AllowPrivateAccess = "true"))
 	class UMMAlsCameraComponent* Camera;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MMAls|Camera", meta = (AllowPrivateAccess = "true"))
 	class UMotionWarpingComponent* MotionWarping;
 
+private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MMAls|Camera", meta = (AllowPrivateAccess = "true"))
 	class UPhysicalAnimationComponent* PhysicalAnimation;
 
@@ -140,6 +141,7 @@ private:
 	bool bPrevRagdollURO;
 
 public:
+	FORCEINLINE UMMAlsCameraComponent* GetCameraComponent() { return Camera; }
 	FORCEINLINE bool IsRagdolling() const { return bIsRagdolling; }
 	FORCEINLINE bool IsHitReacting() const { return bIsHitReacting; }
 	FORCEINLINE EMMAlsOverlayBase GetOverlayBase() const { return OverlayBase; }

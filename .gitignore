@@ -1,10 +1,13 @@
 .vs/
 *.sln
 
-[Bb]inaries/
-**/[Bb]inaries/
+.git/
+**/.git/
+
+Binaries/
+**/Binaries/
 Intermediate/
-**Intermediate/
+**/Intermediate/
 
 Build/
 Saved/

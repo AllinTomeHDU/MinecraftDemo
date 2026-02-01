@@ -4,6 +4,7 @@
 #include "MMAlsAnimInstanceBase.h"
 #include "MotionMatchingAls/3C/Character/MMAlsCharacter.h"
 #include "MotionMatchingAls/3C/Character/MMAlsMovementComponent.h"
+#include "MotionMatchingAls/3C/Camera/MMAlsCameraComponent.h"
 #include "MotionMatchingAls/Traversal/ObstacleCrossing/MMAlsObstacleCrossingComponent.h"
 #include "Components/CapsuleComponent.h"
 
@@ -53,7 +54,16 @@ void UMMAlsAnimInstanceBase::UpdateOffsetRootBone()
 		}
 
 		// 旋转模式设置为 Accumulate 才能支持 TurnInPlace、Pivot、Reface
-		OffsetRootBone.RotationMode = EOffsetRootBoneMode::Accumulate;
+		auto Camera = Chr->GetCameraComponent();
+		if (IsValid(Camera) && Camera->GetViewMode() == EMMAlsViewMode::FirstPerson)
+		{
+			OffsetRootBone.RotationMode = MoveComp->GetMovementSettings()->bForceRotationModeRealse ?
+				EOffsetRootBoneMode::Release : EOffsetRootBoneMode::Accumulate;
+		}
+		else
+		{
+			OffsetRootBone.RotationMode = EOffsetRootBoneMode::Accumulate;
+		}
 	}
 
 	OffsetRootBone.TranslationHalfLife = EssentialValues.bIsMoving ? 0.3f : 0.1f;

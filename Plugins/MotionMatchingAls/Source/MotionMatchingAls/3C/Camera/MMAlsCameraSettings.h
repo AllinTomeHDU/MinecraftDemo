@@ -32,6 +32,9 @@ struct MOTIONMATCHINGALS_API FMMAlsFirstPersonSettings
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName CameraSocketName = FName("FirstPersonCamera");
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bOverrideByCameraLoc = false;
 };
 
 USTRUCT(BlueprintType)

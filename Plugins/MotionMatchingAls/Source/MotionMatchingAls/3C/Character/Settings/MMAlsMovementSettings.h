@@ -46,6 +46,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Landing")
 	float HeavyLandSpeedThreshold = 700.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TurnInPlace")
+	bool bForceRotationModeRealse = false;
 	
 	FMMAlsSpeedSetting GetCurrentSpeedSetting(const EMMAlsRotationMode& RotationMode) const;
 

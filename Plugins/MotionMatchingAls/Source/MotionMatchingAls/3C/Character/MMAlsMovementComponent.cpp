@@ -234,6 +234,10 @@ void UMMAlsMovementComponent::SetRandomAnimCurveValue(const FName& CurveName, co
 	{
 		if (bIsAiming) return;
 
+		auto Chr = Cast<AMMAlsCharacter>(GetCharacterOwner());
+		auto Camera = Cast<UMMAlsCameraComponent>(Chr->GetCameraComponent());
+		if (IsValid(Camera) && Camera->GetViewMode() == EMMAlsViewMode::FirstPerson) return;
+
 		SetRandomIdleCurve(Value);
 	}
 }
@@ -399,7 +403,7 @@ void UMMAlsMovementComponent::OnIsAimingChanged(const bool& bPrevIsAiming)
 	{
 		if (bIsAiming)
 		{
-			SetRandomIdleCurve(0);
+			SetRandomIdleCurve(0.f);
 			SetGait(EMMAlsGait::Walking, true);
 		}
 		else

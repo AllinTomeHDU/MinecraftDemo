@@ -45,6 +45,11 @@ UMMAlsCameraComponent::UMMAlsCameraComponent()
 	}
 }
 
+void UMMAlsCameraComponent::SetTargetAttachedMesh(USkeletalMeshComponent* NewTargetAttachedMesh)
+{
+	TargetAttachedMesh = NewTargetAttachedMesh;
+}
+
 void UMMAlsCameraComponent::GetViewInfo(FMinimalViewInfo& ViewInfo) const
 {
 	ViewInfo.Location = CameraLocation;
@@ -60,12 +65,19 @@ void UMMAlsCameraComponent::GetViewInfo(FMinimalViewInfo& ViewInfo) const
 
 FVector UMMAlsCameraComponent::GetFirstPersonCameraLocation() const
 {
-	return CharacterOwner->GetMesh()->GetSocketLocation(CameraSettings->FP_Settings.CameraSocketName);
+	if (CameraSettings->FP_Settings.bOverrideByCameraLoc)
+	{
+		return GetComponentLocation();
+	}
+
+	return IsValid(TargetAttachedMesh) ?
+		TargetAttachedMesh->GetSocketLocation(CameraSettings->FP_Settings.CameraSocketName) :
+		CharacterOwner->GetMesh()->GetSocketLocation(CameraSettings->FP_Settings.CameraSocketName);
 }
 
 FVector UMMAlsCameraComponent::GetThirdPersonPivotLocation() const
 {
-	const auto* Mesh = CharacterOwner->GetMesh();
+	const auto* Mesh = IsValid(TargetAttachedMesh) ? TargetAttachedMesh : CharacterOwner->GetMesh();
 	return (Mesh->GetSocketLocation(FName("root")) + Mesh->GetSocketLocation(FName("head"))) * 0.5f;
 }
 
@@ -82,6 +94,7 @@ void UMMAlsCameraComponent::SetViewMode(EMMAlsViewMode NewViewMode, bool bForce)
 		if (ViewMode == EMMAlsViewMode::FirstPerson)
 		{
 			MoveComp->SetRotationMode(EMMAlsRotationMode::LookingDirection, true);
+			MoveComp->SetRandomIdleCurve(0.f);
 		}
 		else
 		{
@@ -109,6 +122,14 @@ void UMMAlsCameraComponent::SetShoulderMode(EMMAlsShoulderMode NewShoulderMode, 
 		CameraSettings->TP_Settings.LastShoulderMode = CameraSettings->TP_Settings.ShoulderMode;
 		CameraSettings->TP_Settings.ShoulderMode = NewShoulderMode;
 		OnShoulderModeChangedDelegate.Broadcast(NewShoulderMode);
+	}
+}
+
+void UMMAlsCameraComponent::SetFPOverrideByCameraLoc(const bool bOverride)
+{
+	if (IsValid(CameraSettings))
+	{
+		CameraSettings->FP_Settings.bOverrideByCameraLoc = bOverride;
 	}
 }
 
@@ -176,6 +197,17 @@ void UMMAlsCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (IsValid(CharacterOwner) && IsValid(CameraSettings) && ViewMode == EMMAlsViewMode::FirstPerson)
+	{
+		if (CameraSettings->FP_Settings.bOverrideByCameraLoc)
+		{
+			if (auto PC = CharacterOwner->GetController())
+			{
+				SetWorldRotation(PC->GetControlRotation());
+			}
+		}
+	}
+
 	// 在骨骼动画并行计算的时候不直接进入TickCamera
 	if (!IsRunningParallelEvaluation())
 	{
@@ -222,6 +254,7 @@ void UMMAlsCameraComponent::TickCamera(float DeltaTime, bool bAllowLag)
 		}
 	}
 
+	const auto Mesh = IsValid(TargetAttachedMesh) ? TargetAttachedMesh : CharacterOwner->GetMesh();
 	const FRotator CameraTargetRot = CharacterOwner->GetViewRotation();
 
 	const FVector PreviousPivotTargetLoc = PivotTargetLocation;
@@ -241,7 +274,7 @@ void UMMAlsCameraComponent::TickCamera(float DeltaTime, bool bAllowLag)
 		if (bHideOwner)
 		{
 			bHideOwner = false;
-			CharacterOwner->GetMesh()->SetOwnerNoSee(false);
+			Mesh->SetOwnerNoSee(false);
 		}
 		return;
 	}
@@ -250,7 +283,7 @@ void UMMAlsCameraComponent::TickCamera(float DeltaTime, bool bAllowLag)
 		if (!bHideOwner)
 		{
 			bHideOwner = true;
-			CharacterOwner->GetMesh()->SetOwnerNoSee(true);
+			Mesh->SetOwnerNoSee(true);
 		}
 	}
 	else
@@ -258,7 +291,7 @@ void UMMAlsCameraComponent::TickCamera(float DeltaTime, bool bAllowLag)
 		if (bHideOwner)
 		{
 			bHideOwner = false;
-			CharacterOwner->GetMesh()->SetOwnerNoSee(false);
+			Mesh->SetOwnerNoSee(false);
 		}
 	}
 
@@ -296,12 +329,12 @@ void UMMAlsCameraComponent::TickCamera(float DeltaTime, bool bAllowLag)
 	}
 
 	// 计算Pivot位置
-	const FVector PivotOffset = CharacterOwner->GetMesh()->GetComponentQuat().RotateVector(
+	const FVector PivotOffset = Mesh->GetComponentQuat().RotateVector(
 		FVector{
 			CameraAnimInst->GetCurveValue(FName("PivotOffsetX")),
 			CameraAnimInst->GetCurveValue(FName("PivotOffsetY")),
 			CameraAnimInst->GetCurveValue(FName("PivotOffsetZ"))
-		} * CharacterOwner->GetMesh()->GetComponentScale().Z
+		} * Mesh->GetComponentScale().Z
 	);
 	PivotLocation = PivotLagLocation + PivotOffset;
 
@@ -311,7 +344,7 @@ void UMMAlsCameraComponent::TickCamera(float DeltaTime, bool bAllowLag)
 			CameraAnimInst->GetCurveValue(FName("CameraOffsetX")),
 			CameraAnimInst->GetCurveValue(FName("CameraOffsetY")),
 			CameraAnimInst->GetCurveValue(FName("CameraOffsetZ"))
-		} * CharacterOwner->GetMesh()->GetComponentScale().Z
+		} * Mesh->GetComponentScale().Z
 	);
 	const FVector CameraTargetLoc = PivotLocation + CameraOffset;
 
@@ -377,13 +410,14 @@ FVector UMMAlsCameraComponent::CalcPivotLagLocation(const FQuat& CameraYawRotati
 FVector UMMAlsCameraComponent::CalcCollisionFixLocation(const FVector& CameraTargetLocation, const FVector& PivotOffset, 
 															 float DeltaTime, bool bAllowLag, float& NewTraceDistanceRatio) const
 {
-	const float MeshScale = CharacterOwner->GetMesh()->GetComponentScale().Z;
+	const auto Mesh = IsValid(TargetAttachedMesh) ? TargetAttachedMesh : CharacterOwner->GetMesh();
+	const float MeshScale = Mesh->GetComponentScale().Z;
 
 	FVector TraceOffsetDir = UKismetMathLibrary::GetRightVector(CameraRotation);
 	FVector TraceOffset = TraceOffsetDir * CameraSettings->TP_Settings.GetShoulderOffsetLength() * MeshScale;
 	
 	FVector TraceStart = FMath::Lerp(
-		CharacterOwner->GetMesh()->GetSocketLocation(FName("head")) + TraceOffset,
+		Mesh->GetSocketLocation(FName("head")) + TraceOffset,
 		PivotTargetLocation + PivotOffset + FVector{CameraSettings->TP_Settings.TraceOverrideOffset},
 		FMath::Clamp(CameraAnimInst->GetCurveValue(FName("TraceOverride")), 0.f, 1.f)
 	);
