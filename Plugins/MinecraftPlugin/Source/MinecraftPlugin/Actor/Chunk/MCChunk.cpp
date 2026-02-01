@@ -191,12 +191,14 @@ void AMCChunk::GenerateBlocks()
 	{
 		for (auto y = 0.f; y < static_cast<float>(ChunkSize.Y); y += 1.f)
 		{
+			// 计算噪声坐标，把世界位置转为噪声坐标系
 			const auto XPos = (x * 100.f + static_cast<float>(Location.X)) / 100.f;
 			const auto YPos = (y * 100.f + static_cast<float>(Location.Y)) / 100.f;
 
+			// 得到一个 [0, ChunkSize.Z] 范围的整数值，表示该 (x, y) 位置上的地表高度
 			const auto Height = FMath::Clamp(
 				FMath::RoundToInt((NoiseGenerator->GetNoise(XPos, YPos) + 1.f) * static_cast<float>(ChunkSize.Z) / 2.f), 
-				0, 
+				0,
 				static_cast<float>(ChunkSize.Z)
 			);
 
@@ -374,5 +376,14 @@ void AMCChunk::GenerateMesh()
 void AMCChunk::ApplyMesh() const
 {
 	Mesh->SetMaterial(0, MaterialInterface);
-	Mesh->CreateMeshSection(0, MeshData.Vertices, MeshData.Triangles, MeshData.Normals, MeshData.UV0, MeshData.Colors, TArray<FProcMeshTangent>(), true);
+	Mesh->CreateMeshSection(
+		0, 
+		MeshData.Vertices, 
+		MeshData.Triangles, 
+		MeshData.Normals, 
+		MeshData.UV0, 
+		MeshData.Colors, 
+		TArray<FProcMeshTangent>(), 
+		true
+	);
 }

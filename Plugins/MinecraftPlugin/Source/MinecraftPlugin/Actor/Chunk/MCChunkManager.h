@@ -22,6 +22,8 @@ public:
 	// 给定一个区块和一个方向，查找该方向上的相邻区块，如果存在则返回 true 并输出它
 	AMCChunkBase* GetAdjacentChunk(AMCChunkBase* CurrentChunk, EMCDirection Direction);
 
+	static const FName DefaultChunkTag;
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -43,14 +45,11 @@ private:
 
 	FastNoise* NoiseGenerator;
 
-	static const FName DefaultChunkTag;
-
 	TMap<FIntVector2, TObjectPtr<AMCChunkBase>> Chunks;
 
 public:
 	FORCEINLINE UMaterialInterface* GetChunkMaterialInterface() const { return ChunkMaterialInterface; }
 	FORCEINLINE FIntVector GetNewChunkSize() const { return NewChunkSize; }
 	FORCEINLINE FastNoise* GetNoiseGenerator() const { return NoiseGenerator; }
-	FORCEINLINE const FName& GetDefaultChunkTag() const { return DefaultChunkTag; }
 
 };

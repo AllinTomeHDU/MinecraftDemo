@@ -38,4 +38,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
 	UInputAction* IA_RightMouse;
+
+	UPROPERTY(EditAnywhere)
+	float Reach = 5.f * 100.f;
 };
