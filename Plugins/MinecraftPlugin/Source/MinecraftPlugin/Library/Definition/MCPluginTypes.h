@@ -64,3 +64,10 @@ struct FMCItemInfo
 	EMCBlock BlockType = EMCBlock::Null;
 };
 
+UENUM(BlueprintType)
+enum EMCInventoryVisualiserState
+{
+	Hidden, 
+	ShowingPlayer, 
+	ShowingBoth
+};

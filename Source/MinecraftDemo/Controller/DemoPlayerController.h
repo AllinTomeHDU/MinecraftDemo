@@ -26,9 +26,12 @@ protected:
 	virtual void SetupInputComponent() override;
 
 	void LeftMouseAction();
-	void RightMouseAction();
 
+	void RightMouseAction();
 	void CreateChunk();
+
+	void InventoryActoin();
+	void UpdateInteractInputMode(const bool bIsDisplayed);
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
@@ -42,6 +45,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
 	UInputAction* IA_RightMouse;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
+	UInputAction* IA_Inventory;
 
 	UPROPERTY(EditAnywhere)
 	float Reach = 4.f * 100.f;

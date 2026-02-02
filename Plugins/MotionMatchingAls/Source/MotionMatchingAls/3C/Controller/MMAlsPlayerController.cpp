@@ -168,8 +168,8 @@ void AMMAlsPlayerController::BeginPlay()
 
 	if (PlayerCameraManager)
 	{
-		PlayerCameraManager->ViewPitchMin = -60.f;
-		PlayerCameraManager->ViewPitchMax = 60.f;
+		PlayerCameraManager->ViewPitchMin = ViewPitchRange.X;
+		PlayerCameraManager->ViewPitchMax = ViewPitchRange.Y;
 	}
 }
 

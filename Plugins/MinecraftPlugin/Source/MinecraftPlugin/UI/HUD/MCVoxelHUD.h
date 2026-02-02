@@ -8,6 +8,7 @@
 
 class UMCUserWidgetBase;
 class UMCPlayerHotbarWidget;
+class UMCInventoryVisualizerWidget;
 
 /**
  * 
@@ -36,4 +37,13 @@ private:
 	UPROPERTY()
 	UMCPlayerHotbarWidget* PlayerHotbarWidget;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UMCInventoryVisualizerWidget> InventoryVisualizerWidgetClass;
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UMCInventoryVisualizerWidget* InventoryVisualizerWidget;
+
+public:
+	FORCEINLINE UMCPlayerHotbarWidget* GetPlayerHotbar() const { return PlayerHotbarWidget; }
+	FORCEINLINE UMCInventoryVisualizerWidget* GetInventoryVisualizer() const { return InventoryVisualizerWidget; }
 };

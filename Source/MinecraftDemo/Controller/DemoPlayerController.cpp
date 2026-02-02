@@ -4,6 +4,11 @@
 #include "DemoPlayerController.h"
 #include "MotionMatchingAls/3C/Character/MMAlsCharacter.h"
 #include "MotionMatchingAls/3C/Camera/MMAlsCameraComponent.h"
+#include "MinecraftPlugin/Game/MCVoxelGameState.h"
+#include "MinecraftPlugin/UI/HUD/MCVoxelHUD.h"
+#include "MinecraftPlugin/UI/Widget/Inventory/MCInventoryVisualizerWidget.h"
+#include "MinecraftPlugin/Inventory/MCPlayerInventory.h"
+#include "MinecraftPlugin/Inventory/MCInventoryInterface.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -24,6 +29,7 @@ void ADemoPlayerController::SetupInputComponent()
 	{
 		EnhancedInputComp->BindAction(IA_LeftMouse, ETriggerEvent::Triggered, this, &ThisClass::LeftMouseAction);
 		EnhancedInputComp->BindAction(IA_RightMouse, ETriggerEvent::Started, this, &ThisClass::RightMouseAction);
+		EnhancedInputComp->BindAction(IA_Inventory, ETriggerEvent::Started, this, &ThisClass::InventoryActoin);
 	}
 
 	auto Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
@@ -36,7 +42,6 @@ void ADemoPlayerController::SetupInputComponent()
 void ADemoPlayerController::LeftMouseAction()
 {
 	OnLeftMouseTrigger.Broadcast();
-	//DeleteChunk();
 }
 
 void ADemoPlayerController::RightMouseAction()
@@ -48,4 +53,30 @@ void ADemoPlayerController::CreateChunk()
 {
 	
 
+}
+
+void ADemoPlayerController::InventoryActoin()
+{
+	auto VoxelHUD = Cast<AMCVoxelHUD>(GetHUD());
+	auto VoxelGS = Cast<AMCVoxelGameState>(GetWorld()->GetGameState());
+	if (!IsValid(VoxelHUD) || !IsValid(VoxelGS)) return;
+
+	bool bIsDisplayed;
+	VoxelHUD->GetInventoryVisualizer()->ToggleInventoryState(VoxelGS->GetPlayerInventory(), bIsDisplayed);
+
+	UpdateInteractInputMode(bIsDisplayed);
+}
+
+void ADemoPlayerController::UpdateInteractInputMode(const bool bIsDisplayed)
+{
+	//if (bIsDisplayed)
+	//{
+	//	SetInputMode(FInputModeUIOnly());
+	//	SetShowMouseCursor(true);
+	//}
+	//else
+	//{
+	//	SetInputMode(FInputModeGameOnly());
+	//	SetShowMouseCursor(false);
+	//}
 }

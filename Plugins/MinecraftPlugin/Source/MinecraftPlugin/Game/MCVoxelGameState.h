@@ -41,5 +41,4 @@ public:
 	FORCEINLINE UMCInventoryVisualizerWidget* GetInventoryVisualizer() const { return InventoryVisualizer; }
 	FORCEINLINE void SetInventoryVisualizer(UMCInventoryVisualizerWidget* NewWidget) { InventoryVisualizer = NewWidget; }
 
-
 };

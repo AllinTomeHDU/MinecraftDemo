@@ -4,6 +4,7 @@
 #include "MCVoxelHUD.h"
 #include "MinecraftPlugin/UI/Widget/MCUserWidgetBase.h"
 #include "MinecraftPlugin/UI/Widget/Inventory/MCPlayerHotbarWidget.h"
+#include "MinecraftPlugin/UI/Widget/Inventory/MCInventoryVisualizerWidget.h"
 
 
 AMCVoxelHUD::AMCVoxelHUD()
@@ -28,4 +29,10 @@ void AMCVoxelHUD::BeginPlay()
 		PlayerHotbarWidget->AddToViewport(0);
 	}
 
+	checkf(InventoryVisualizerWidgetClass, TEXT("AMCHUD::InventoryVisualizerWidgetClass is nullptr"));
+	InventoryVisualizerWidget = CreateWidget<UMCInventoryVisualizerWidget>(GetWorld(), InventoryVisualizerWidgetClass);
+	if (IsValid(InventoryVisualizerWidget))
+	{
+		InventoryVisualizerWidget->AddToViewport(1);
+	}
 }

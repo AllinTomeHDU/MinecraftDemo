@@ -4,7 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "../MCUserWidgetBase.h"
+#include "MinecraftPlugin/Library/Definition/MCPluginTypes.h"
 #include "MCInventoryVisualizerWidget.generated.h"
+
+class UMCInventorySlotWidget;
+class UMCInventoryItemWidget;
+class UMCInventoryGridWidget;
+class IMCInventoryInterface;
+class UMCPlayerInventory;
 
 /**
  * 
@@ -14,7 +21,62 @@ class MINECRAFTPLUGIN_API UMCInventoryVisualizerWidget : public UMCUserWidgetBas
 {
 	GENERATED_BODY()
 	
-	
-	
+public:
+	UFUNCTION(BlueprintCallable)
+	void ToggleInventoryState(UMCPlayerInventory* InPlayerInventory, bool& OutIsMenuDisplayed);
+
+	UFUNCTION()
+	void OnSlotButtonClicked(UMCInventorySlotWidget* InSlotWidget);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayerGridAddWidget(UUserWidget* InWidget);
+
+protected:
+	virtual void NativeOnInitialized() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	//virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+
+	UFUNCTION(BlueprintCallable)
+	void ChangePlayerInputsToWorld();
+
+private:
+	//void Hide();
+	void HideSecondaryInventory();
+	void HidePlayerInventory();
+
+	void InitPlayerInventoryWidget(UMCPlayerInventory* InPlayerInventory);
+
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Minecraft")
+	TSubclassOf<UMCInventorySlotWidget> InventorySlotWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Blueprints")
+	TSubclassOf<UMCInventoryItemWidget> InventoryItemWidgetClass;
+
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* Overlay_OtherInventory;
+
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* Overlay_PlayerInventory;
+
+	UPROPERTY(meta = (BindWidget))
+	UMCInventoryGridWidget* InventoryGrid_Other;
+
+	UPROPERTY(meta = (BindWidget))
+	UMCInventoryGridWidget* InventoryGrid_Player;
+
+	UPROPERTY()
+	TScriptInterface<IMCInventoryInterface> CurrentOtherInventory;
+
+	UPROPERTY()
+	UMCPlayerInventory* CurrentPlayerInventory;
+
+	UPROPERTY()
+	UMCInventoryItemWidget* CurrentHeldItem;
+
+	EMCInventoryVisualiserState VisualiserState = EMCInventoryVisualiserState::Hidden;
+	const ESlateVisibility DefaultSelfInvisibility = ESlateVisibility::Hidden;
+	const ESlateVisibility DefaultSelfVisibility = ESlateVisibility::SelfHitTestInvisible; 
 	
 };

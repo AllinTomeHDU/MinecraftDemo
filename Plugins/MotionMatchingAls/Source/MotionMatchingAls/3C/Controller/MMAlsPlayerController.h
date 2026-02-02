@@ -62,6 +62,9 @@ protected:
 	class UMMAlsMovementComponent* MoveComp;
 
 private:
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Settings")
+	FVector2D ViewPitchRange = FVector2D(-85.f, 90.f);
+
 	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Locomotion")
 	UInputMappingContext* IMC_Locomotion;
 

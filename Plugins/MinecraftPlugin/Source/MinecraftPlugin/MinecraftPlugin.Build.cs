@@ -39,6 +39,7 @@ public class MinecraftPlugin : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+                "InputCore",
                 "ProceduralMeshComponent",
                 "FastNoise",
                 "FastNoiseGenerator",
