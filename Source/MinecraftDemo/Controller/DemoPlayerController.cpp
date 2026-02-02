@@ -4,7 +4,6 @@
 #include "DemoPlayerController.h"
 #include "MotionMatchingAls/3C/Character/MMAlsCharacter.h"
 #include "MotionMatchingAls/3C/Camera/MMAlsCameraComponent.h"
-#include "MinecraftPlugin/Actor/Chunk/MCChunkManager.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"

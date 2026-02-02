@@ -25,6 +25,10 @@
 		{
 			"Name": "FastNoiseGenerator",
 			"Enabled": true
+		},
+		{
+			"Name": "ProceduralMeshComponent",
+			"Enabled": true
 		}
 	]
 }

@@ -28,7 +28,7 @@ enum class EMCBlock : uint8
 USTRUCT()
 struct FMCChunkMeshData
 {
-	GENERATED_BODY();
+	GENERATED_BODY()
 
 	TArray<FVector> Vertices;
 	TArray<int> Triangles;
@@ -45,3 +45,22 @@ struct FMCChunkMeshData
 		UV0.Empty();
 	}
 };
+
+USTRUCT()
+struct FMCItemInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	FString ItemName = "Unnamed Item";
+
+	UPROPERTY(EditAnywhere)
+	int8 MaxStackSize = 64;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ItemThumbnail;
+
+	UPROPERTY(EditAnywhere)
+	EMCBlock BlockType = EMCBlock::Null;
+};
+
