@@ -6,6 +6,9 @@
 #include "Components/PanelWidget.h"
 
 
+#if PLATFORM_WINDOWS
+#pragma optimize("",off)
+#endif
 void UMCHotbarCursorWidget::AnimateToNewParent(UPanelWidget* NewParent)
 {
 	TargetParent = NewParent;
@@ -22,8 +25,9 @@ void UMCHotbarCursorWidget::AnimateToNewParent(UPanelWidget* NewParent)
 void UMCHotbarCursorWidget::OnAnimationFinishedPlaying(UUMGSequencePlayer& Player)
 {
 	Super::OnAnimationFinishedPlaying(Player);
-
-	if (Player.GetAnimation() == DisappearAnimation)
+	 
+	auto CursorAnim = Player.GetAnimation();
+	if (CursorAnim == DisappearAnimation)
 	{
 		TargetParent->AddChild(this);
 		TargetParent = nullptr;
@@ -36,7 +40,7 @@ void UMCHotbarCursorWidget::OnAnimationFinishedPlaying(UUMGSequencePlayer& Playe
 
 		PlayAnimation(AppearAnimation);
 	}
-	else if (Player.GetAnimation() == AppearAnimation)
+	else if (CursorAnim == AppearAnimation)
 	{
 		bIsAnimating = false;
 		if (TargetParent)
@@ -53,3 +57,6 @@ void UMCHotbarCursorWidget::BeginTransitioning()
 	bIsAnimating = true;
 	PlayAnimation(DisappearAnimation);
 }
+#if PLATFORM_WINDOWS
+#pragma optimize("",on)
+#endif

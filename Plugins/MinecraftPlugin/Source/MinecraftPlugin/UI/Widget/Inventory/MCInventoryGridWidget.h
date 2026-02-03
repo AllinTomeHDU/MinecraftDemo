@@ -30,7 +30,7 @@ public:
 	);
 	
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget, AllowPrivateAccess = "true"))
+	UPROPERTY(meta = (BindWidget))
 	UPanelWidget* WrapBox_InventorySlot;
 
 public:

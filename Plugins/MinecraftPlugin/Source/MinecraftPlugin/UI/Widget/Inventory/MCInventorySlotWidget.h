@@ -28,7 +28,7 @@ public:
 	);
 
 	void AddItemWidget(UMCInventoryItemWidget* WidgetToAdd);
-	bool RemoveCurrentItemWidgt();
+	bool RemoveCurrentItemWidget();
 
 protected:
 	virtual void NativeOnInitialized() override;

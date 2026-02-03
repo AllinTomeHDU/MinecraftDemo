@@ -23,7 +23,7 @@ class MINECRAFTPLUGIN_API UMCPlayerHotbarWidget : public UMCUserWidgetBase
 public:
 	void UpdateCursorPosition();
 	void UpdateItems();
-	
+
 protected:
 	virtual void NativeOnInitialized() override;
 
@@ -31,17 +31,20 @@ private:
 	void SpawnSlots();
 
 private:
-	UPROPERTY(Transient, VisibleAnywhere, meta = (BindWidget))
+	UPROPERTY(EditDefaultsOnly, Category = "Minecraft")
+	TSubclassOf<UMCInventorySlotWidget> SlotWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Minecraft")
+	TSubclassOf<UMCInventoryItemWidget> ItemWidgetClass;
+
+	UPROPERTY(meta = (BindWidget))
 	UMCHotbarCursorWidget* WBP_MC_HotbarCursor;
 
-	UPROPERTY(Transient, VisibleAnywhere, meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UPanelWidget* WrapBox_SlotParent;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Minecraft")
-	TSubclassOf<UMCInventorySlotWidget> InventorySlotWidgetClass;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Minecraft")
-	TSubclassOf<UMCInventoryItemWidget> InventoryItemWidgetClass;
+	UPROPERTY()
+	TArray<UMCInventorySlotWidget*> CreatedSlots;
 
 	UPROPERTY()
 	UMCPlayerInventory* RepresentedPlayerInventory;
@@ -49,6 +52,5 @@ private:
 	UPROPERTY()
 	UMCInventoryVisualizerWidget* InventoryVisualizerWidget;
 
-	UPROPERTY()
-	TArray<UMCInventorySlotWidget*> CreatedSlots;
+
 };

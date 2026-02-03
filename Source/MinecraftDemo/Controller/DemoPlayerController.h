@@ -32,6 +32,8 @@ protected:
 
 	void InventoryActoin();
 	void UpdateInteractInputMode(const bool bIsDisplayed);
+
+	void HotbarCursorActrion(const FInputActionValue& Value);
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
@@ -48,6 +50,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
 	UInputAction* IA_Inventory;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
+	UInputAction* IA_HotbarCursor;
 
 	UPROPERTY(EditAnywhere)
 	float Reach = 4.f * 100.f;

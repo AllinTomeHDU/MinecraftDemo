@@ -12,6 +12,7 @@ class UMCInventoryItemWidget;
 class UMCInventoryGridWidget;
 class IMCInventoryInterface;
 class UMCPlayerInventory;
+class UButton;
 
 /**
  * 
@@ -28,19 +29,19 @@ public:
 	UFUNCTION()
 	void OnSlotButtonClicked(UMCInventorySlotWidget* InSlotWidget);
 
-	UFUNCTION(BlueprintCallable)
-	void PlayerGridAddWidget(UUserWidget* InWidget);
+	UFUNCTION()
+	void OnCloseButtonClicked();
 
 protected:
 	virtual void NativeOnInitialized() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	//virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
 	UFUNCTION(BlueprintCallable)
 	void ChangePlayerInputsToWorld();
 
 private:
-	//void Hide();
+	void Hide();
 	void HideSecondaryInventory();
 	void HidePlayerInventory();
 
@@ -53,6 +54,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Blueprints")
 	TSubclassOf<UMCInventoryItemWidget> InventoryItemWidgetClass;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* Button_Close;
 
 	UPROPERTY(meta = (BindWidget))
 	UPanelWidget* Overlay_OtherInventory;

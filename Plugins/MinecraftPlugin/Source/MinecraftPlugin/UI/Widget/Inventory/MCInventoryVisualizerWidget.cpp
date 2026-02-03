@@ -7,18 +7,10 @@
 #include "MinecraftPlugin/UI/Widget/Inventory/MCInventoryGridWidget.h"
 #include "MinecraftPlugin/Inventory/MCInventoryInterface.h"
 #include "MinecraftPlugin/Inventory/MCPlayerInventory.h"
+#include "MinecraftPlugin/Game/MCVoxelGameState.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/Button.h"
 
-
-void UMCInventoryVisualizerWidget::ChangePlayerInputsToWorld()
-{
-	if (auto PC = GetWorld()->GetFirstPlayerController())
-	{
-		PC->SetInputMode(FInputModeGameOnly());
-		PC->SetShowMouseCursor(false);
-	}
-}
 
 void UMCInventoryVisualizerWidget::ToggleInventoryState(UMCPlayerInventory* InPlayerInventory, bool& OutIsMenuDisplayed)
 {
@@ -64,15 +56,24 @@ void UMCInventoryVisualizerWidget::OnSlotButtonClicked(UMCInventorySlotWidget* I
 	}
 }
 
-void UMCInventoryVisualizerWidget::PlayerGridAddWidget(UUserWidget* InWidget)
+void UMCInventoryVisualizerWidget::OnCloseButtonClicked()
 {
-	InventoryGrid_Player->GetWrapBox_InventorySlot()->AddChild(InWidget);
+	if (IsValid(CurrentHeldItem)) return;
+
+	Hide();
 }
 
 void UMCInventoryVisualizerWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
+	Cast<AMCVoxelGameState>(GetWorld()->GetGameState())->SetInventoryVisualizer(this);
+
+	SetVisibility(ESlateVisibility::Hidden);
+	Overlay_OtherInventory->SetVisibility(DefaultSelfInvisibility);
+	Overlay_PlayerInventory->SetVisibility(DefaultSelfInvisibility);
+
+	Button_Close->OnClicked.AddDynamic(this, &ThisClass::OnCloseButtonClicked);
 }
 
 void UMCInventoryVisualizerWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -80,42 +81,47 @@ void UMCInventoryVisualizerWidget::NativeTick(const FGeometry& MyGeometry, float
 	Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-//FReply UMCInventoryVisualizerWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
-//{
-//	if (State == Hidden) return FReply::Unhandled();
-//
-//	// TODO: Explore getting the keys to check for from the input here specifically. 
-//	// It seems possible for the player input but not here? Who designed this.
-//	if (InKeyEvent.GetKey() == EKeys::I || InKeyEvent.GetKey() == EKeys::E)
-//	{
-//		if (!GetWorld()->GetFirstPlayerController()) return FReply::Unhandled();
-//		if (CurrentHeldItem != nullptr) return FReply::Unhandled();
-//
-//		Hide();
-//		return FReply::Handled();
-//	}
-//	return FReply::Unhandled();
-//}
+FReply UMCInventoryVisualizerWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+{
+	/*
+	* 当键盘事件设置为UIOnly时，输入事件需要在UI里监听
+	*/
+	if (VisualiserState == EMCInventoryVisualiserState::Hidden) return FReply::Unhandled();
 
-//void UMCInventoryVisualizerWidget::Hide()
-//{
-//	switch (State)
-//	{
-//	case Hidden:
-//		break;
-//
-//	case ShowingBoth: // TODO: Identical to TogglePlayerInventory, ToggleBothInventories
-//		HideSecondaryInventory();
-//		CurrentOtherInventory = nullptr;
-//
-//	case ShowingPlayer:
-//		HidePlayerInventory();
-//		CurrentOtherInventory = nullptr;
-//		ChangePlayerInputsToWorld();
-//		State = Hidden;
-//		break;
-//	}
-//}
+	if (InKeyEvent.GetKey() == EKeys::E)
+	{
+		if (!GetWorld()->GetFirstPlayerController()) return FReply::Unhandled();
+		if (CurrentHeldItem != nullptr) return FReply::Unhandled();
+
+		Hide();
+		return FReply::Handled();
+	}
+	return FReply::Unhandled();
+}
+
+void UMCInventoryVisualizerWidget::Hide()
+{
+	switch (VisualiserState)
+	{
+	case EMCInventoryVisualiserState::Hidden:
+		break;
+
+	case EMCInventoryVisualiserState::ShowingPlayer:
+		HidePlayerInventory();
+		CurrentPlayerInventory = nullptr;
+		ChangePlayerInputsToWorld();
+		VisualiserState = EMCInventoryVisualiserState::Hidden;
+		break;
+
+	case EMCInventoryVisualiserState::ShowingBoth: // TODO: Identical to TogglePlayerInventory, ToggleBothInventories
+		HidePlayerInventory();
+		HideSecondaryInventory();
+		CurrentPlayerInventory = nullptr;
+		CurrentOtherInventory = nullptr;
+		ChangePlayerInputsToWorld();
+		VisualiserState = EMCInventoryVisualiserState::Hidden;
+	}
+}
 
 void UMCInventoryVisualizerWidget::HideSecondaryInventory()
 {
@@ -140,6 +146,16 @@ void UMCInventoryVisualizerWidget::InitPlayerInventoryWidget(UMCPlayerInventory*
 		{ 0, -1 }
 	);
 	InventoryGrid_Player->SetVisibility(ESlateVisibility::Visible);
+	Overlay_PlayerInventory->SetVisibility(DefaultSelfVisibility);
 	SetVisibility(DefaultSelfVisibility);
 	SetFocus();
+}
+
+void UMCInventoryVisualizerWidget::ChangePlayerInputsToWorld()
+{
+	if (auto PC = GetWorld()->GetFirstPlayerController())
+	{
+		PC->SetInputMode(FInputModeGameOnly());
+		PC->SetShowMouseCursor(false);
+	}
 }

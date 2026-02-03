@@ -30,7 +30,7 @@ void UMCInventorySlotWidget::AddItemWidget(UMCInventoryItemWidget* WidgetToAdd)
 	CurrentItemWidget = WidgetToAdd;
 }
 
-bool UMCInventorySlotWidget::RemoveCurrentItemWidgt()
+bool UMCInventorySlotWidget::RemoveCurrentItemWidget()
 {
 	if (!IsValid(CurrentItemWidget)) return false;
 

@@ -15,11 +15,12 @@ void AMCVoxelHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
-	checkf(CrosshairWidgetClass, TEXT("AMCHUD::CrosshairWidgetClass is nullptr"));
-	CrosshairWidget = CreateWidget<UMCUserWidgetBase>(GetWorld(), CrosshairWidgetClass);
-	if (IsValid(CrosshairWidget))
+	// 需要优先构造，GameState会保存对InventoryVisualizerWidget的引用
+	checkf(InventoryVisualizerWidgetClass, TEXT("AMCHUD::InventoryVisualizerWidgetClass is nullptr"));
+	InventoryVisualizerWidget = CreateWidget<UMCInventoryVisualizerWidget>(GetWorld(), InventoryVisualizerWidgetClass);
+	if (IsValid(InventoryVisualizerWidget))
 	{
-		CrosshairWidget->AddToViewport(-1);
+		InventoryVisualizerWidget->AddToViewport(1);
 	}
 
 	checkf(PlayerHotbarWidgetClass, TEXT("AMCHUD::PlayerHotbarWidgetClass is nullptr"));
@@ -29,10 +30,10 @@ void AMCVoxelHUD::BeginPlay()
 		PlayerHotbarWidget->AddToViewport(0);
 	}
 
-	checkf(InventoryVisualizerWidgetClass, TEXT("AMCHUD::InventoryVisualizerWidgetClass is nullptr"));
-	InventoryVisualizerWidget = CreateWidget<UMCInventoryVisualizerWidget>(GetWorld(), InventoryVisualizerWidgetClass);
-	if (IsValid(InventoryVisualizerWidget))
+	checkf(CrosshairWidgetClass, TEXT("AMCHUD::CrosshairWidgetClass is nullptr"));
+	CrosshairWidget = CreateWidget<UMCUserWidgetBase>(GetWorld(), CrosshairWidgetClass);
+	if (IsValid(CrosshairWidget))
 	{
-		InventoryVisualizerWidget->AddToViewport(1);
+		CrosshairWidget->AddToViewport(-1);
 	}
 }

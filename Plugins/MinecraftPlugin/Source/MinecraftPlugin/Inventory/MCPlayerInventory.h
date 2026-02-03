@@ -24,17 +24,17 @@ public:
 	FORCEINLINE FIntVector2 GetHotBarRowStartCoords() const { return FIntVector2(0, GetSize().Y - 1); }
 	FORCEINLINE FIntVector2 GetHotbarSize() const { return HotbarSize; }
 	FORCEINLINE int32 GetCurrentlySelectedHotbarSlot() const { return CurrentlySelectedHotbarSlot; }
-	
-	FORCEINLINE FIntVector2 GetCurrentlySelectedHotbarSlotCoords() const
-	{
-		auto StartCoords = GetHotBarRowStartCoords();
-		StartCoords.X = GetCurrentlySelectedHotbarSlot();
-		return StartCoords;
-	}
 	FORCEINLINE bool SetCurrentlySelectedHotbarSlot(int32 NewlySelectedSlot)
 	{
 		if (NewlySelectedSlot < 0 || NewlySelectedSlot > HotbarSize.X - 1) return false;
 		CurrentlySelectedHotbarSlot = NewlySelectedSlot;
 		return true;
 	}
+	FORCEINLINE FIntVector2 GetCurrentlySelectedHotbarSlotCoords() const
+	{
+		auto StartCoords = GetHotBarRowStartCoords();
+		StartCoords.X = GetCurrentlySelectedHotbarSlot();
+		return StartCoords;
+	}
+
 };
