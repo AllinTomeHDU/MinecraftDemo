@@ -4,9 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "MotionMatchingAls/3C/Controller/MMAlsPlayerController.h"
+#include "MinecraftPlugin/Library/Definition/MCPluginTypes.h"
 #include "DemoPlayerController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftMouseTriggerDelegate);
+
+class AMCChunkBase;
 
 /**
  * 
@@ -28,12 +31,14 @@ protected:
 	void LeftMouseAction();
 
 	void RightMouseAction();
-	void CreateChunk();
+	void PlaceBlock(AMCChunkBase* Chunk, const FVector& WorldPos, const FVector& HitNormal, EMCBlock Block);
 
 	void InventoryActoin();
 	void UpdateInteractInputMode(const bool bIsDisplayed);
 
 	void HotbarCursorActrion(const FInputActionValue& Value);
+
+	void ToggleViewModeAction();
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
@@ -53,6 +58,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
 	UInputAction* IA_HotbarCursor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
+	UInputAction* IA_CameraMode;
 
 	UPROPERTY(EditAnywhere)
 	float Reach = 4.f * 100.f;

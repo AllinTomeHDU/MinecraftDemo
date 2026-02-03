@@ -7,6 +7,7 @@
 #include "MMAlsCameraSettings.h"
 #include "MMAlsCameraComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMMAlsIsOwnerNoSeeChanged, bool, bIsOwnerNoSee);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMMAlsViewModeChanged, EMMAlsViewMode);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMMAlsShoulderModeChanged, EMMAlsShoulderMode);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMMAlsActiveAiming, bool);
@@ -25,6 +26,9 @@ class MOTIONMATCHINGALS_API UMMAlsCameraComponent : public USkeletalMeshComponen
 	
 public:
 	UMMAlsCameraComponent();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnMMAlsIsOwnerNoSeeChanged IsOwnerNoSeeChangedDelegate;
 
 	UFUNCTION(BlueprintCallable)
 	void SetTargetAttachedMesh(USkeletalMeshComponent* NewTargetAttachedMesh);
@@ -95,6 +99,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera|Settings", meta = (AllowPrivateAccess = "true"))
 	UMMAlsCameraSettings* CameraSettings;
+
+	UPROPERTY(EditAnywhere, Category = "Camera|Settings")
+	float OwnerNoSeeThreshold = 0.7f;
 
 	float PreviousGlobalTimeDilation = 1.f;
 

@@ -3,6 +3,7 @@
 
 #include "MMAlsCameraComponent.h"
 #include "MotionMatchingAls/Library/MMAlsMathLibrary.h"
+#include "MotionMatchingAls/3C/Character/MMAlsCharacter.h"
 #include "MotionMatchingAls/3C/Character/MMAlsMovementComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -275,15 +276,17 @@ void UMMAlsCameraComponent::TickCamera(float DeltaTime, bool bAllowLag)
 		{
 			bHideOwner = false;
 			Mesh->SetOwnerNoSee(false);
+			IsOwnerNoSeeChangedDelegate.Broadcast(false);
 		}
 		return;
 	}
-	else if (FirstPersonOverride > 0.7f)
+	else if (FirstPersonOverride > OwnerNoSeeThreshold)
 	{
 		if (!bHideOwner)
 		{
 			bHideOwner = true;
 			Mesh->SetOwnerNoSee(true);
+			IsOwnerNoSeeChangedDelegate.Broadcast(true);
 		}
 	}
 	else
@@ -292,6 +295,7 @@ void UMMAlsCameraComponent::TickCamera(float DeltaTime, bool bAllowLag)
 		{
 			bHideOwner = false;
 			Mesh->SetOwnerNoSee(false);
+			IsOwnerNoSeeChangedDelegate.Broadcast(false);
 		}
 	}
 

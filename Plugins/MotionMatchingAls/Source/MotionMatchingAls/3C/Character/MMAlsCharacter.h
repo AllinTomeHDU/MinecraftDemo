@@ -36,6 +36,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void RagdollingEnd();
 
+	// TODO: HitReacting π¶ƒ‹…–Œ¥ÕÍ…∆
 	UFUNCTION(BlueprintCallable)
 	virtual void SetHitReacting(const bool bHitReacting);
 

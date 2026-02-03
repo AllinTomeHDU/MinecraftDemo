@@ -24,7 +24,10 @@ class MINECRAFTPLUGIN_API UMCInventoryVisualizerWidget : public UMCUserWidgetBas
 	
 public:
 	UFUNCTION(BlueprintCallable)
-	void ToggleInventoryState(UMCPlayerInventory* InPlayerInventory, bool& OutIsMenuDisplayed);
+	void TogglePlayerInventory(UMCPlayerInventory* InPlayerInventory, bool& OutIsMenuDisplayed);
+
+	UFUNCTION(BlueprintCallable)
+	void ToggleBothInventories(UMCPlayerInventory* InPlayerInventory, TScriptInterface<IMCInventoryInterface> InOtherInventory, bool& OutIsMenuDisplayed);
 
 	UFUNCTION()
 	void OnSlotButtonClicked(UMCInventorySlotWidget* InSlotWidget);
@@ -46,7 +49,7 @@ private:
 	void HidePlayerInventory();
 
 	void InitPlayerInventoryWidget(UMCPlayerInventory* InPlayerInventory);
-
+	void InitOtherInventoryWidget(TScriptInterface<IMCInventoryInterface> InOtherInventory);
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Minecraft")

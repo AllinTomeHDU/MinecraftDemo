@@ -12,14 +12,13 @@
 #include "Components/Button.h"
 
 
-void UMCInventoryVisualizerWidget::ToggleInventoryState(UMCPlayerInventory* InPlayerInventory, bool& OutIsMenuDisplayed)
+void UMCInventoryVisualizerWidget::TogglePlayerInventory(UMCPlayerInventory* InPlayerInventory, bool& OutIsMenuDisplayed)
 {
 	switch (VisualiserState)
 	{
 		case EMCInventoryVisualiserState::Hidden:
 		{
 			InitPlayerInventoryWidget(InPlayerInventory);
-			CurrentPlayerInventory = InPlayerInventory;
 			OutIsMenuDisplayed = true;
 			VisualiserState = EMCInventoryVisualiserState::ShowingPlayer;
 			break;
@@ -27,7 +26,6 @@ void UMCInventoryVisualizerWidget::ToggleInventoryState(UMCPlayerInventory* InPl
 		case EMCInventoryVisualiserState::ShowingPlayer:
 		{
 			HidePlayerInventory();
-			CurrentPlayerInventory = nullptr;
 			ChangePlayerInputsToWorld();
 			OutIsMenuDisplayed = false;
 			VisualiserState = EMCInventoryVisualiserState::Hidden;
@@ -36,10 +34,38 @@ void UMCInventoryVisualizerWidget::ToggleInventoryState(UMCPlayerInventory* InPl
 		case EMCInventoryVisualiserState::ShowingBoth:
 		{
 			HideSecondaryInventory();
-			CurrentOtherInventory = nullptr;
 			OutIsMenuDisplayed = InventoryGrid_Player->GetVisibility() == ESlateVisibility::Visible;
 			VisualiserState = OutIsMenuDisplayed ? EMCInventoryVisualiserState::ShowingPlayer
 												 : EMCInventoryVisualiserState::Hidden;
+		}
+	}
+}
+
+void UMCInventoryVisualizerWidget::ToggleBothInventories(UMCPlayerInventory* InPlayerInventory, TScriptInterface<IMCInventoryInterface> InOtherInventory, bool& OutIsMenuDisplayed)
+{
+	switch (VisualiserState)
+	{
+		case EMCInventoryVisualiserState::Hidden:
+		{
+			InitPlayerInventoryWidget(InPlayerInventory);
+			InitOtherInventoryWidget(InOtherInventory);
+			OutIsMenuDisplayed = true;
+			VisualiserState = EMCInventoryVisualiserState::ShowingBoth;
+			break;
+		}
+		case EMCInventoryVisualiserState::ShowingPlayer:
+		{
+			InitOtherInventoryWidget(InOtherInventory);
+			OutIsMenuDisplayed = true;
+			VisualiserState = EMCInventoryVisualiserState::ShowingBoth;
+			break;
+		}
+		case EMCInventoryVisualiserState::ShowingBoth:
+		{
+			HidePlayerInventory();
+			HideSecondaryInventory();
+			OutIsMenuDisplayed = false;
+			VisualiserState = EMCInventoryVisualiserState::Hidden;
 		}
 	}
 }
@@ -127,12 +153,14 @@ void UMCInventoryVisualizerWidget::HideSecondaryInventory()
 {
 	InventoryGrid_Other->GetWrapBox_InventorySlot()->ClearChildren();
 	Overlay_OtherInventory->SetVisibility(ESlateVisibility::Hidden);
+	CurrentOtherInventory = nullptr;
 }
 
 void UMCInventoryVisualizerWidget::HidePlayerInventory()
 {
 	InventoryGrid_Player->GetWrapBox_InventorySlot()->ClearChildren();
 	Overlay_PlayerInventory->SetVisibility(ESlateVisibility::Hidden);
+	CurrentPlayerInventory = nullptr;
 }
 
 void UMCInventoryVisualizerWidget::InitPlayerInventoryWidget(UMCPlayerInventory* InPlayerInventory)
@@ -149,6 +177,20 @@ void UMCInventoryVisualizerWidget::InitPlayerInventoryWidget(UMCPlayerInventory*
 	Overlay_PlayerInventory->SetVisibility(DefaultSelfVisibility);
 	SetVisibility(DefaultSelfVisibility);
 	SetFocus();
+}
+
+void UMCInventoryVisualizerWidget::InitOtherInventoryWidget(TScriptInterface<IMCInventoryInterface> InOtherInventory)
+{
+	CurrentOtherInventory = InOtherInventory;
+	InventoryGrid_Other->SpawnInventoryGrid(
+		InOtherInventory,
+		this,
+		InventorySlotWidgetClass,
+		InventoryItemWidgetClass
+	);
+	InventoryGrid_Other->SetVisibility(ESlateVisibility::Visible);
+	Overlay_OtherInventory->SetVisibility(DefaultSelfVisibility);
+	SetVisibility(DefaultSelfVisibility);
 }
 
 void UMCInventoryVisualizerWidget::ChangePlayerInputsToWorld()

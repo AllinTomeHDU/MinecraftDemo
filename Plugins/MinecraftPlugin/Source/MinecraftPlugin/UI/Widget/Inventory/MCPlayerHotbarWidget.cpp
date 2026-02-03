@@ -20,11 +20,14 @@ void UMCPlayerHotbarWidget::NativeOnInitialized()
 	{
 		RepresentedPlayerInventory = GS->GetPlayerInventory();
 		InventoryVisualizerWidget = GS->GetInventoryVisualizer();
-	}
 
-	SpawnSlots();
-	UpdateItems();
-	WBP_MC_HotbarCursor->AnimateToNewParent(CreatedSlots[0]->GetHotbarCursorParent());
+		SpawnSlots();
+		UpdateItems();
+		if (!CreatedSlots.IsEmpty())
+		{
+			WBP_MC_HotbarCursor->AnimateToNewParent(CreatedSlots[0]->GetHotbarCursorParent());
+		}
+	}
 }
 
 void UMCPlayerHotbarWidget::UpdateCursorPosition()

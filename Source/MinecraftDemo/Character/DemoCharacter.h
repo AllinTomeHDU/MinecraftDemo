@@ -17,9 +17,15 @@ class MINECRAFTDEMO_API ADemoCharacter : public AMMAlsCharacter
 public:
 	ADemoCharacter(const FObjectInitializer& ObjectInitializer);
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateMeshesRenderingMode();
+
 protected:
 	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void OnIsNoSeeChanged(bool bIsOwnerNoSee);
 
 	UFUNCTION(BlueprintCallable)
 	void OnHitActionComplete();
@@ -47,5 +53,5 @@ private:
 	class UStaticMeshComponent* RightHandObject;
 
 	UPROPERTY(EditAnywhere, Category = "MC|Settings")
-	float Reach = 4.f * 100.f;
+	float HitDistance = 400.f;
 };

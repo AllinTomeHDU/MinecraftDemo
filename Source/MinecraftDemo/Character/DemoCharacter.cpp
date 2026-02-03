@@ -11,6 +11,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 
 ADemoCharacter::ADemoCharacter(const FObjectInitializer& ObjectInitializer)
@@ -56,49 +57,86 @@ void ADemoCharacter::OnConstruction(const FTransform& Transform)
 	}
 
 	GetMesh()->SetCastShadow(false);
-
-	Body->SetVisibility(false);
 	Body->SetCastHiddenShadow(true);
 	Body->SetAffectIndirectLightingWhileHidden(true);
 	Body->SetFirstPersonPrimitiveType(EFirstPersonPrimitiveType::None);
-
-	Head->SetVisibility(false);
 	Head->SetCastHiddenShadow(true);
 	Head->SetAffectIndirectLightingWhileHidden(true);
 	Head->SetFirstPersonPrimitiveType(EFirstPersonPrimitiveType::None);
-
 	LeftHandObject->SetCastShadow(false);
 	RightHandObject->SetCastShadow(false);
+
+	UpdateMeshesRenderingMode();
+}
+
+void ADemoCharacter::UpdateMeshesRenderingMode()
+{
+	if (Camera->GetViewMode() == EMMAlsViewMode::FirstPerson)
+	{
+		Body->SetVisibility(false);
+		Head->SetVisibility(false);
+		LeftHandObject->SetVisibility(true);
+		RightHandObject->SetVisibility(true);
+	}
+	else
+	{
+		Body->SetVisibility(true);
+		Head->SetVisibility(true);
+		LeftHandObject->SetVisibility(false);
+		RightHandObject->SetVisibility(false);
+	}
 }
 
 void ADemoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Camera->IsOwnerNoSeeChangedDelegate.AddDynamic(this, &ThisClass::OnIsNoSeeChanged);
 }
+
+void ADemoCharacter::OnIsNoSeeChanged(bool bIsOwnerNoSee)
+{
+	Body->SetOwnerNoSee(bIsOwnerNoSee);
+	Head->SetOwnerNoSee(bIsOwnerNoSee);
+}
+
 
 void ADemoCharacter::OnHitActionComplete()
 {
-	FVector Start = Camera->GetComponentLocation();
-	FVector End = Start + (Camera->GetForwardVector() * Reach);
+	auto PC = Cast<APlayerController>(Controller);
+	if (!IsValid(PC)) return;
 
-	FHitResult HitResult;
-	bool bHit = UKismetSystemLibrary::LineTraceSingle(
-		GetWorld(),
-		Start,
-		End,
-		UEngineTypes::ConvertToTraceType(ECC_Visibility),
-		false,
-		{},
-		EDrawDebugTrace::None,
-		HitResult,
-		true
-	);
-	if (!bHit) return;
+	int32 ViewportX, ViewportY;
+	PC->GetViewportSize(ViewportX, ViewportY);
+	FVector2D ScreenCenter(ViewportX / 2.f, ViewportY / 2.f);
 
-	if (HitResult.GetActor()->ActorHasTag(AMCChunkManager::DefaultChunkTag))
+	FVector WorldOrigin, WorldDirection;
+	if (UGameplayStatics::DeprojectScreenToWorld(PC, ScreenCenter, WorldOrigin, WorldDirection))
 	{
-		HitBlock(HitResult);
+		FVector Start = WorldOrigin;
+		FVector End = Start + (WorldDirection * 2000.f);
+
+		FHitResult HitResult;
+		bool bHit = UKismetSystemLibrary::LineTraceSingle(
+			GetWorld(),
+			Start,
+			End,
+			UEngineTypes::ConvertToTraceType(ECC_Visibility),
+			false,
+			{},
+			EDrawDebugTrace::None,
+			HitResult,
+			true
+		);
+		if (!bHit) return;
+
+		if (HitResult.GetActor()->ActorHasTag(AMCChunkManager::DefaultChunkTag))
+		{
+			if (FVector::Dist(HitResult.ImpactPoint, GetActorLocation()) < HitDistance)
+			{
+				HitBlock(HitResult);
+			}
+		}
 	}
 }
 
