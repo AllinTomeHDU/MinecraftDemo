@@ -51,6 +51,8 @@ private:
 	void InitPlayerInventoryWidget(UMCPlayerInventory* InPlayerInventory);
 	void InitOtherInventoryWidget(TScriptInterface<IMCInventoryInterface> InOtherInventory);
 
+	void TrackCurrentlyHeldItem();
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Minecraft")
 	TSubclassOf<UMCInventorySlotWidget> InventorySlotWidgetClass;
@@ -81,6 +83,9 @@ private:
 
 	UPROPERTY()
 	UMCInventoryItemWidget* CurrentHeldItem;
+
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* Overlay_HeldItem;
 
 	EMCInventoryVisualiserState VisualiserState = EMCInventoryVisualiserState::Hidden;
 	const ESlateVisibility DefaultSelfInvisibility = ESlateVisibility::Hidden;

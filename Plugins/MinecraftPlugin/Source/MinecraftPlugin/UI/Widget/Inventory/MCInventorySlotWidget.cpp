@@ -9,11 +9,6 @@
 #include "Components/Button.h"
 
 
-FIntVector2 UMCInventorySlotWidget::GetRepresentedInventoryCoord() const
-{
-	return FIntVector2();
-}
-
 void UMCInventorySlotWidget::InitializeData(
 	FIntVector2 InRepresentedInventoryCoord, 
 	UMCInventoryVisualizerWidget* InOwningInventoryVisualizer, 

@@ -10,6 +10,7 @@
 #include "MinecraftPlugin/Game/MCVoxelGameState.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/Button.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 
 
 void UMCInventoryVisualizerWidget::TogglePlayerInventory(UMCPlayerInventory* InPlayerInventory, bool& OutIsMenuDisplayed)
@@ -72,13 +73,35 @@ void UMCInventoryVisualizerWidget::ToggleBothInventories(UMCPlayerInventory* InP
 
 void UMCInventoryVisualizerWidget::OnSlotButtonClicked(UMCInventorySlotWidget* InSlotWidget)
 {
-	if (CurrentHeldItem && InSlotWidget->IsHoldingWidget())
+	if (!CurrentHeldItem && InSlotWidget->IsHoldingWidget())
 	{
 		// 从库中取出资产
+		CurrentHeldItem = InSlotWidget->GetCurrentItemWidget();
+		InSlotWidget->RemoveCurrentItemWidget();
+		Overlay_HeldItem->AddChild(CurrentHeldItem);
+		CurrentHeldItem->SetVisibility(ESlateVisibility::HitTestInvisible);
+		Button_Close->SetIsEnabled(false);
+
+		UMCItem* RemovedItem;
+		InSlotWidget->GetAssociatedInventory()->RemoveFrom(
+			InSlotWidget->GetRepresentedInventoryCoord(), 
+			RemovedItem
+		);
 	}
-	else if (!CurrentHeldItem || !InSlotWidget->IsHoldingWidget())
+	else if (CurrentHeldItem && !InSlotWidget->IsHoldingWidget())
 	{
 		// 将资产存入库中
+		InSlotWidget->GetAssociatedInventory()->InsertInto(
+			InSlotWidget->GetRepresentedInventoryCoord(),
+			CurrentHeldItem->GetRepresentedItem()
+		);
+		CurrentHeldItem->RemoveFromParent();
+		CurrentHeldItem->SetRenderTranslation(FVector2D::ZeroVector);
+		CurrentHeldItem->SetVisibility(ESlateVisibility::Visible);
+		InSlotWidget->AddItemWidget(CurrentHeldItem);
+		CurrentHeldItem = nullptr;
+
+		Button_Close->SetIsEnabled(true);
 	}
 }
 
@@ -105,6 +128,8 @@ void UMCInventoryVisualizerWidget::NativeOnInitialized()
 void UMCInventoryVisualizerWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	TrackCurrentlyHeldItem();
 }
 
 FReply UMCInventoryVisualizerWidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
@@ -117,7 +142,7 @@ FReply UMCInventoryVisualizerWidget::NativeOnKeyDown(const FGeometry& InGeometry
 	if (InKeyEvent.GetKey() == EKeys::E)
 	{
 		if (!GetWorld()->GetFirstPlayerController()) return FReply::Unhandled();
-		if (CurrentHeldItem != nullptr) return FReply::Unhandled();
+		if (CurrentHeldItem) return FReply::Unhandled();
 
 		Hide();
 		return FReply::Handled();
@@ -191,6 +216,22 @@ void UMCInventoryVisualizerWidget::InitOtherInventoryWidget(TScriptInterface<IMC
 	InventoryGrid_Other->SetVisibility(ESlateVisibility::Visible);
 	Overlay_OtherInventory->SetVisibility(DefaultSelfVisibility);
 	SetVisibility(DefaultSelfVisibility);
+}
+
+void UMCInventoryVisualizerWidget::TrackCurrentlyHeldItem()
+{
+	if (IsValid(CurrentHeldItem))
+	{
+		if (auto PC = GetWorld()->GetFirstPlayerController())
+		{
+			float DPI_X, DPI_Y;
+			if (UWidgetLayoutLibrary::GetMousePositionScaledByDPI(PC, DPI_X, DPI_Y))
+			{
+				FVector2D ItemSize = CurrentHeldItem->GetDesiredSize();
+				CurrentHeldItem->SetRenderTranslation(FVector2D(DPI_X, DPI_Y) - ItemSize * 0.5f);
+			}
+		}
+	}
 }
 
 void UMCInventoryVisualizerWidget::ChangePlayerInputsToWorld()
