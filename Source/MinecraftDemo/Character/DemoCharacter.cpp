@@ -97,23 +97,28 @@ void ADemoCharacter::SetHandsObjectVisibility(const bool bVisible)
 	RightHandObject->SetVisibility(bVisible, true);
 }
 
+void ADemoCharacter::SetBodyOwnerNoSee(const bool bIsNoSee)
+{
+	Body->SetOwnerNoSee(bIsNoSee);
+	Head->SetOwnerNoSee(bIsNoSee);
+}
+
 void ADemoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	Camera->IsOwnerNoSeeChangedDelegate.AddDynamic(this, &ThisClass::OnIsNoSeeChanged);
 
-	if (IsPlayerControlled() && IsLocallyControlled())
+	if (IsLocallyControlled())
 	{
-		LeftHandObject->SetVisibility(true, true);
-		RightHandObject->SetVisibility(true, true);
+		LeftHandObject->SetVisibility(bForceHideHandsObject ? false : true, true);
+		RightHandObject->SetVisibility(bForceHideHandsObject ? false : true, true);
 	}
 	else
 	{
 		LeftHandObject->SetVisibility(false, true);
 		RightHandObject->SetVisibility(false, true);
 	}
-
 }
 
 void ADemoCharacter::OnIsNoSeeChanged(bool bIsOwnerNoSee)

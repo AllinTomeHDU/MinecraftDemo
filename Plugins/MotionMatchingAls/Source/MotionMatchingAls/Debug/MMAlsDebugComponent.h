@@ -32,7 +32,8 @@ class MOTIONMATCHINGALS_API UMMAlsDebugComponent : public UActorComponent
 public:	
 	UMMAlsDebugComponent();
 
-
+	UFUNCTION(BlueprintCallable)
+	void InitDebugOverlay();
 
 protected:
 	virtual void BeginPlay() override;

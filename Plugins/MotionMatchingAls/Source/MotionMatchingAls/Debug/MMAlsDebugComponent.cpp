@@ -16,6 +16,22 @@ UMMAlsDebugComponent::UMMAlsDebugComponent()
 
 }
 
+void UMMAlsDebugComponent::InitDebugOverlay()
+{
+	if (CharacterOwner->IsLocallyControlled())
+	{
+		if (IsValid(DebugOverlayClass) && !IsValid(DebugOverlay))
+		{
+			DebugOverlay = CreateWidget<UMMAlsDebugWidget>(GetWorld(), DebugOverlayClass);
+			if (IsValid(DebugOverlay))
+			{
+				DebugOverlay->SetDebugComp(this);
+				DebugOverlay->AddToViewport(10);
+			}
+		}
+	}
+}
+
 void UMMAlsDebugComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -27,18 +43,7 @@ void UMMAlsDebugComponent::BeginPlay()
 	TraversalComp = CharacterOwner->FindComponentByClass<UMMAlsTraversalComponent>();
 	AnimInst = Cast<UMMAlsAnimInstance>(CharacterOwner->GetMesh()->GetAnimInstance());
 
-	if (CharacterOwner->IsLocallyControlled())
-	{
-		if (IsValid(DebugOverlayClass))
-		{
-			DebugOverlay = CreateWidget<UMMAlsDebugWidget>(GetWorld(), DebugOverlayClass);
-			if (IsValid(DebugOverlay))
-			{
-				DebugOverlay->SetDebugComp(this);
-				DebugOverlay->AddToViewport();
-			}
-		}
-	}
+	InitDebugOverlay();
 }
 
 void UMMAlsDebugComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

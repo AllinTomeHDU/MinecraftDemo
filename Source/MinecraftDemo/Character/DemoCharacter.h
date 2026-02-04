@@ -9,6 +9,9 @@
 
 class AMCChunkBase;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHitBlockActionSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlaceBlockActionSignature);
+
 /**
  * 
  */
@@ -24,6 +27,13 @@ public:
 	void UpdateMeshesRenderingMode();
 
 	void SetHandsObjectVisibility(const bool bVisible);
+	void SetBodyOwnerNoSee(const bool bIsNoSee);
+
+	UPROPERTY(BlueprintAssignable)
+	FOnHitBlockActionSignature OnHitBlockActionDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPlaceBlockActionSignature OnPlaceBlockActionDelegate;
 
 protected:
 	virtual void OnConstruction(const FTransform& Transform) override;
@@ -74,6 +84,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* RightHandObject;
+
+	UPROPERTY(EditAnywhere, Category = "MC|Settings")
+	bool bForceHideHandsObject{ false };
 
 	UPROPERTY(EditAnywhere, Category = "MC|Settings")
 	float HitDistance = 400.f;

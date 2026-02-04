@@ -7,9 +7,6 @@
 #include "MinecraftPlugin/Library/Definition/MCPluginTypes.h"
 #include "DemoPlayerController.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftMouseTrigger);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRightMouseTrigger);
-
 class AMCChunkBase;
 
 /**
@@ -22,12 +19,6 @@ class MINECRAFTDEMO_API ADemoPlayerController : public AMMAlsPlayerController
 
 public:
 	ADemoPlayerController();
-	
-	UPROPERTY(BlueprintAssignable)
-	FOnLeftMouseTrigger OnLeftMouseTriggerDelegate;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnRightMouseTrigger OnRightMouseTriggerDelegate;
 
 	void UpdateInteractInputMode(const bool bIsDisplayed);
 

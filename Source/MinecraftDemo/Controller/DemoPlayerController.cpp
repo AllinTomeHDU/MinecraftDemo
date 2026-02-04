@@ -80,9 +80,10 @@ void ADemoPlayerController::BeginPlay()
 			}
 		}
 
-		if (auto DemoChr = Cast<ADemoCharacter>(Chr))
+		if (auto DemoChr = Cast<ADemoCharacter>(GetPawn()))
 		{
 			DemoChr->SetHandsObjectVisibility(true);
+			DemoChr->SetBodyOwnerNoSee(true);
 		}
 	}
 }
@@ -119,18 +120,23 @@ void ADemoPlayerController::Server_SpawnHeroCharacter_Implementation(UClass* InC
 	FRotator Rot = StartPoint->GetActorRotation();
 	ACharacter* SpawnedCharacter = World->SpawnActor<ACharacter>(InClass, Loc, Rot, SpawnParams);
 
-	//Possess(SpawnedCharacter);
 	OnPossess(SpawnedCharacter);
 }
 
 void ADemoPlayerController::LeftMouseAction()
 {
-	OnLeftMouseTriggerDelegate.Broadcast();
+	if (auto DemoChr = Cast<ADemoCharacter>(GetPawn()))
+	{
+		DemoChr->OnHitBlockActionDelegate.Broadcast();
+	}
 }
 
 void ADemoPlayerController::RightMouseAction()
 {
-	OnRightMouseTriggerDelegate.Broadcast();
+	if (auto DemoChr = Cast<ADemoCharacter>(GetPawn()))
+	{
+		DemoChr->OnPlaceBlockActionDelegate.Broadcast();
+	}
 }
 
 void ADemoPlayerController::InventoryActoin()
