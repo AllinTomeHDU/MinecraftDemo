@@ -7,7 +7,8 @@
 #include "MinecraftPlugin/Library/Definition/MCPluginTypes.h"
 #include "DemoPlayerController.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftMouseTriggerDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftMouseTrigger);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRightMouseTrigger);
 
 class AMCChunkBase;
 
@@ -23,51 +24,49 @@ public:
 	ADemoPlayerController();
 	
 	UPROPERTY(BlueprintAssignable)
-	FOnLeftMouseTriggerDelegate OnLeftMouseTrigger;
+	FOnLeftMouseTrigger OnLeftMouseTriggerDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnRightMouseTrigger OnRightMouseTriggerDelegate;
+
+	void UpdateInteractInputMode(const bool bIsDisplayed);
 
 protected:
 	virtual void SetupInputComponent() override;
-
-	void LeftMouseAction();
-
-	void RightMouseAction();
-	void PlaceBlock(AMCChunkBase* Chunk, const FVector& WorldPos, const FVector& HitNormal, EMCBlock Block);
-
-	void PlaceBlock(const FVector& TraceStart, const FVector& TraceEnd);
+	virtual void BeginPlay() override;
 
 	UFUNCTION(Server, Reliable)
-	void Server_PlaceBlock(const FVector TraceStart, const FVector TraceEnd);
+	void Server_SpawnHeroCharacter(UClass* InClass);
 
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_PlaceBlock(const FVector TraceStart, const FVector TraceEnd);
-
+	void LeftMouseAction();
+	void RightMouseAction();
 	void InventoryActoin();
-	void UpdateInteractInputMode(const bool bIsDisplayed);
-
 	void HotbarCursorActrion(const FInputActionValue& Value);
-
 	void ToggleViewModeAction();
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
+	UPROPERTY(EditDefaultsOnly, Category = "Demo")
+	TSubclassOf<ACharacter> DefaultCharacter;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Inputs|Demo")
 	UInputMappingContext* IMC_MCDemo;
 
-	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
+	UPROPERTY(EditDefaultsOnly, Category = "Inputs|Demo")
 	int32 MCDemoInputsPriority = 2;
 
-	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
+	UPROPERTY(EditDefaultsOnly, Category = "Inputs|Demo")
 	UInputAction* IA_LeftMouse;
 
-	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
+	UPROPERTY(EditDefaultsOnly, Category = "Inputs|Demo")
 	UInputAction* IA_RightMouse;
 
-	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
+	UPROPERTY(EditDefaultsOnly, Category = "Inputs|Demo")
 	UInputAction* IA_Inventory;
 
-	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
+	UPROPERTY(EditDefaultsOnly, Category = "Inputs|Demo")
 	UInputAction* IA_HotbarCursor;
 
-	UPROPERTY(EditDefaultsOnly, Category = "MMAls|Inputs|Demo")
+	UPROPERTY(EditDefaultsOnly, Category = "Inputs|Demo")
 	UInputAction* IA_CameraMode;
 
 	UPROPERTY(EditAnywhere)

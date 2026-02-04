@@ -8,7 +8,7 @@ public class MinecraftDemo : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "SessionsSystem", });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "MotionMatchingAls", "MinecraftPlugin" });
 

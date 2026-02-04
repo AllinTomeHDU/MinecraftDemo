@@ -1,0 +1,69 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+using UnrealBuildTool;
+
+public class SessionsSystem : ModuleRules
+{
+	public SessionsSystem(ReadOnlyTargetRules Target) : base(Target)
+	{
+		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+		
+		PublicIncludePaths.AddRange(
+			new string[] {
+				// ... add public include paths required here ...
+			}
+			);
+				
+		
+		PrivateIncludePaths.AddRange(
+			new string[] {
+				// ... add other private include paths required here ...
+			}
+			);
+			
+		
+		PublicDependencyModuleNames.AddRange(
+			new string[]
+			{
+				"Core",
+                "UMG",
+                "OnlineSubsystem",
+                "OnlineSubsystemSteam",
+                "BlueprintOnlineHelperUtils",
+				// ... add other public dependencies that you statically link with here ...
+			}
+            );
+			
+		
+		PrivateDependencyModuleNames.AddRange(
+			new string[]
+			{
+				"CoreUObject",
+				"Engine",
+				"Slate",
+				"SlateCore",
+                "EnhancedInput",
+				// ... add private dependencies that you statically link with here ...	
+			}
+			);
+
+        // 若需要接入DistributedServer，可包含ClientSystem
+        //PublicDefinitions.Add("CLIENT_SYSTEM");
+		if (PublicDefinitions.Contains("CLIENT_SYSTEM"))
+        {
+            PrivateDependencyModuleNames.AddRange(
+                new string[]
+                {
+                    "ClientSystem"
+                }
+                );
+        }
+
+        DynamicallyLoadedModuleNames.AddRange(
+			new string[]
+			{
+				// ... add any modules that your module loads dynamically here ...
+			}
+			);
+	}
+}

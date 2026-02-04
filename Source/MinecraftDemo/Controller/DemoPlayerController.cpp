@@ -16,6 +16,8 @@
 #include "MinecraftPlugin/Library/MCVoxelUtilsLibrary.h"
 #include "MotionMatchingAls/3C/Character/MMAlsCharacter.h"
 #include "MotionMatchingAls/3C/Camera/MMAlsCameraComponent.h"
+#include "Room/MultiplayerRoomSubsystem.h"
+#include "GameFramework/PlayerStart.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -50,140 +52,85 @@ void ADemoPlayerController::SetupInputComponent()
 	}
 }
 
+void ADemoPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (IsLocalPlayerController())
+	{
+		SetInputMode(FInputModeGameOnly());
+		SetShowMouseCursor(false);
+
+		if (auto RoomSubsystem = GetGameInstance()->GetSubsystem<UMultiplayerRoomSubsystem>())
+		{
+			if (UClass* InClass = RoomSubsystem->GetSavedCharacterClass())
+			{
+				Server_SpawnHeroCharacter(InClass);
+			}
+			if (!GetCharacter() && IsValid(DefaultCharacter))
+			{
+				Server_SpawnHeroCharacter(DefaultCharacter);
+			}
+		}
+		else
+		{
+			if (!GetCharacter() && IsValid(DefaultCharacter))
+			{
+				Server_SpawnHeroCharacter(DefaultCharacter);
+			}
+		}
+
+		if (auto DemoChr = Cast<ADemoCharacter>(Chr))
+		{
+			DemoChr->SetHandsObjectVisibility(true);
+		}
+	}
+}
+
+void ADemoPlayerController::Server_SpawnHeroCharacter_Implementation(UClass* InClass)
+{
+	UWorld* World = GetWorld();
+
+	// 为避免角色生成时位置冲突，可依据玩家数摆放出生点
+	AActor* StartPoint = nullptr;
+	TArray<AActor*> FoundStarts;
+	UGameplayStatics::GetAllActorsOfClass(World, APlayerStart::StaticClass(), FoundStarts);
+	checkf(FoundStarts.Num() > 0, TEXT("Can't found player start point..."));
+	for (auto& Tmp : FoundStarts)
+	{
+		if (!Tmp->ActorHasTag(TEXT("Used")))
+		{
+			StartPoint = Tmp;
+			Tmp->Tags.Add(TEXT("Used"));
+			break;
+		}
+	}
+	if (!StartPoint)
+	{
+		StartPoint = FoundStarts[0];
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetPawn();
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	FVector Loc = StartPoint->GetActorLocation();
+	FRotator Rot = StartPoint->GetActorRotation();
+	ACharacter* SpawnedCharacter = World->SpawnActor<ACharacter>(InClass, Loc, Rot, SpawnParams);
+
+	//Possess(SpawnedCharacter);
+	OnPossess(SpawnedCharacter);
+}
+
 void ADemoPlayerController::LeftMouseAction()
 {
-	OnLeftMouseTrigger.Broadcast();
+	OnLeftMouseTriggerDelegate.Broadcast();
 }
 
 void ADemoPlayerController::RightMouseAction()
 {
-	int32 ViewportX, ViewportY;
-	GetViewportSize(ViewportX, ViewportY);
-	FVector2D ScreenCenter(ViewportX / 2.f, ViewportY / 2.f);
-
-	FVector WorldOrigin, WorldDirection;
-	if (UGameplayStatics::DeprojectScreenToWorld(this, ScreenCenter, WorldOrigin, WorldDirection))
-	{
-		FVector Start = WorldOrigin;
-		FVector End = Start + (WorldDirection * 2000.f);
-
-		FHitResult HitResult;
-		bool bHit = UKismetSystemLibrary::LineTraceSingle(
-			GetWorld(),
-			Start,
-			End,
-			UEngineTypes::ConvertToTraceType(ECC_Visibility),
-			false,
-			{},
-			EDrawDebugTrace::None,
-			HitResult,
-			true
-		);
-		if (!bHit) return;
-		if (HitResult.GetActor()->ActorHasTag(AMCChunkManager::DefaultChunkTag))
-		{
-			if (FVector::Dist(HitResult.ImpactPoint, Chr->GetActorLocation()) < 500.f)
-			{
-				auto GS = Cast<AMCVoxelGameState>(GetWorld()->GetGameState());
-				AMCChunkBase* HitChunk = Cast<AMCChunkBase>(HitResult.GetActor());
-				FVector WorldPosition = HitResult.Location - HitResult.Normal;
-				FIntVector Coord = UMCVoxelUtilsLibrary::WorldToLocalBlockPosition(WorldPosition, HitChunk->GetChunkSize());
-				switch (HitChunk->GetBlock(Coord))
-				{
-					case EMCBlock::Inventory:
-					{
-						TScriptInterface<IMCInventoryInterface> WorldInventory;
-						if (GS->GetInventoryDatabase().GetWorldInventory(UMCVoxelUtilsLibrary::WorldToBlockPosition(WorldPosition), WorldInventory))
-						{
-							bool bIsInventoryDisplayed;
-							Cast<AMCVoxelHUD>(GetHUD())->GetInventoryVisualizer()->ToggleBothInventories(
-								GS->GetPlayerInventory(),
-								WorldInventory,
-								bIsInventoryDisplayed
-							);
-							UpdateInteractInputMode(bIsInventoryDisplayed);
-						}
-						break;
-					}
-					default:
-					{
-						PlaceBlock(Start, End);
-					}
-				}
-			}
-		}
-	}
-}
-
-void ADemoPlayerController::PlaceBlock(AMCChunkBase* Chunk, const FVector& WorldPos, const FVector& HitNormal, EMCBlock Block)
-{
-	auto GS = Cast<AMCVoxelGameState>(GetWorld()->GetGameState());
-	switch (Block)
-	{
-	case EMCBlock::Inventory:
-		GS->GetInventoryDatabase().AddWorldInventory(
-			UMCVoxelUtilsLibrary::WorldToBlockPosition(WorldPos) + FIntVector(HitNormal),
-			NewObject<UMCInventory>()
-		);
-		// goto default
-	default:
-		Chunk->ModifyVoxel(
-			UMCVoxelUtilsLibrary::WorldToLocalBlockPosition(WorldPos, Chunk->GetChunkSize()) + FIntVector(HitNormal), 
-			Block
-		);
-		break;
-	}
-}
-
-void ADemoPlayerController::PlaceBlock(const FVector& TraceStart, const FVector& TraceEnd)
-{
-	if (HasAuthority())
-	{
-		Multicast_PlaceBlock(TraceStart, TraceEnd);
-	}
-	else
-	{
-		Server_PlaceBlock(TraceStart, TraceEnd);
-	}
-}
-
-void ADemoPlayerController::Server_PlaceBlock_Implementation(const FVector TraceStart, const FVector TraceEnd)
-{
-	Multicast_PlaceBlock(TraceStart, TraceEnd);
-}
-
-void ADemoPlayerController::Multicast_PlaceBlock_Implementation(const FVector TraceStart, const FVector TraceEnd)
-{
-	FHitResult HitResult;
-	bool bHit = UKismetSystemLibrary::LineTraceSingle(
-		GetWorld(),
-		TraceStart,
-		TraceEnd,
-		UEngineTypes::ConvertToTraceType(ECC_Visibility),
-		false,
-		{},
-		EDrawDebugTrace::None,
-		HitResult,
-		true
-	);
-	if (!bHit) return;
-	if (!HitResult.GetActor()->ActorHasTag(AMCChunkManager::DefaultChunkTag)) return;
-	if (FVector::Dist(HitResult.ImpactPoint, Chr->GetActorLocation()) > 500.f) return;
-
-	auto GS = Cast<AMCVoxelGameState>(GetWorld()->GetGameState());
-	AMCChunkBase* HitChunk = Cast<AMCChunkBase>(HitResult.GetActor());
-	
-	UMCItem* RemovedItem;
-	auto PlayerInventory = GS->GetPlayerInventory();
-	if (PlayerInventory->RemoveNumberFrom(PlayerInventory->GetCurrentlySelectedHotbarSlotCoords(), 1, RemovedItem))
-	{
-		auto Block = GS->GetItemInfoDatabase()->GetItemInfo(RemovedItem->GetAssociatedItemID()).BlockType;
-		PlaceBlock(HitChunk, HitResult.Location - HitResult.Normal, HitResult.Normal, Block);
-		if (IsLocalController())
-		{
-			Cast<AMCVoxelHUD>(GetHUD())->GetPlayerHotbar()->UpdateItems();
-		}
-	}
+	OnRightMouseTriggerDelegate.Broadcast();
 }
 
 void ADemoPlayerController::InventoryActoin()

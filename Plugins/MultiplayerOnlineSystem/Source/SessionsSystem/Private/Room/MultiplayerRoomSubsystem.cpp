@@ -1,0 +1,117 @@
+// Copyright: Jichao Luo
+
+
+#include "Room/MultiplayerRoomSubsystem.h"
+#include "Blueprint/UserWidget.h"
+#include "TimerManager.h"
+
+
+UUserWidget* UMultiplayerRoomSubsystem::ShowTransitionWidget(
+	TSubclassOf<UUserWidget> InWidgetClass, float InMinDisplayTime, float InMaxDisplayTime, bool bAutoClose, int32 InZOrder)
+{
+	if (!GetWorld() || !IsValid(InWidgetClass)) return nullptr;
+
+	if (IsValid(TransitionWidget))
+	{
+		if (GEngine && GEngine->GameViewport)
+		{
+			GEngine->GameViewport->RemoveViewportWidgetContent(TransitionWidget->TakeWidget());
+			TransitionWidget = nullptr;
+			bIsTransiotionPlaying = false;
+		}
+	}
+
+	TransitionWidget = CreateWidget<UUserWidget>(GetGameInstance(), InWidgetClass);
+	if (IsValid(TransitionWidget))
+	{
+		if (GEngine && GEngine->GameViewport)
+		{
+			GEngine->GameViewport->AddViewportWidgetContent(TransitionWidget->TakeWidget(), InZOrder);
+			bIsTransiotionPlaying = true;
+		}
+
+		bCanBeClosed = false;
+		bPendingClose = false;
+		bAutoCloseEnabled = bAutoClose;
+
+		if (InMinDisplayTime > 0.f)
+		{
+			GetWorld()->GetTimerManager().SetTimer(
+				MinDisplayTimerHandle,
+				this,
+				&ThisClass::OnMinDisplayTimeReached,
+				InMinDisplayTime,
+				false
+			);
+		}
+		else
+		{
+			OnMinDisplayTimeReached();
+		}
+
+		if (bAutoClose && InMaxDisplayTime > 0.f)
+		{
+			GetWorld()->GetTimerManager().SetTimer(
+				MaxDisplayTimerHandle,
+				this,
+				&ThisClass::OnMaxDisplayTimeReached,
+				InMaxDisplayTime,
+				false
+			);
+		}
+	}
+
+	return TransitionWidget;
+}
+
+void UMultiplayerRoomSubsystem::RequestCloseTransitionWidget(bool bForce)
+{
+	if (bForce)
+	{
+		PerformCloseTransitionWidget();
+		return;
+	}
+
+	if (bCanBeClosed)
+	{
+		PerformCloseTransitionWidget();
+	}
+	else
+	{
+		bPendingClose = true;
+	}
+}
+
+void UMultiplayerRoomSubsystem::OnMinDisplayTimeReached()
+{
+	bCanBeClosed = true;
+
+	if (bPendingClose)
+	{
+		PerformCloseTransitionWidget();
+	}
+}
+
+void UMultiplayerRoomSubsystem::OnMaxDisplayTimeReached()
+{
+	PerformCloseTransitionWidget();
+}
+
+void UMultiplayerRoomSubsystem::PerformCloseTransitionWidget()
+{
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(MinDisplayTimerHandle);
+		World->GetTimerManager().ClearTimer(MaxDisplayTimerHandle);
+		if (GEngine && GEngine->GameViewport && IsValid(TransitionWidget))
+		{
+			GEngine->GameViewport->RemoveViewportWidgetContent(TransitionWidget->TakeWidget());
+			TransitionWidget = nullptr;
+			bIsTransiotionPlaying = false;
+		}
+	}
+	
+	bCanBeClosed = false;
+	bPendingClose = false;
+	OnTransionWidgetCloseDelegate.Broadcast();
+}

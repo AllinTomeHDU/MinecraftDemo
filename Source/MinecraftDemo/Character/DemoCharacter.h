@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "MotionMatchingAls/3C/Character/MMAlsCharacter.h"
+#include "MinecraftPlugin/Library/Definition/MCPluginTypes.h"
 #include "DemoCharacter.generated.h"
+
+class AMCChunkBase;
 
 /**
  * 
@@ -20,6 +23,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateMeshesRenderingMode();
 
+	void SetHandsObjectVisibility(const bool bVisible);
+
 protected:
 	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void BeginPlay() override;
@@ -30,7 +35,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void OnHitActionComplete();
 
-private:
 	void HitBlock(const FVector& TraceStart, const FVector& TraceEnd);
 
 	UFUNCTION(Server, Reliable)
@@ -38,6 +42,19 @@ private:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_HitBlock(const FVector TraceStart, const FVector TraceEnd);
+
+	UFUNCTION(BlueprintCallable)
+	void OnPlaceActionComplete();
+
+	void PlaceBlock(const FVector& TraceStart, const FVector& TraceEnd);
+
+	UFUNCTION(Server, Reliable)
+	void Server_PlaceBlock(const FVector TraceStart, const FVector TraceEnd);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlaceBlock(const FVector TraceStart, const FVector TraceEnd);
+
+	void PlaceBlock(AMCChunkBase* Chunk, const FVector& WorldPos, const FVector& HitNormal, EMCBlock Block);
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
