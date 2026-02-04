@@ -73,15 +73,17 @@ void ADemoCharacter::UpdateMeshesRenderingMode()
 {
 	if (Camera->GetViewMode() == EMMAlsViewMode::FirstPerson)
 	{
-		Body->SetVisibility(false);
-		Head->SetVisibility(false);
+		Body->SetOwnerNoSee(true);
+		Head->SetOwnerNoSee(true);
+
 		LeftHandObject->SetVisibility(true);
 		RightHandObject->SetVisibility(true);
 	}
 	else
 	{
-		Body->SetVisibility(true);
-		Head->SetVisibility(true);
+		Body->SetOwnerNoSee(false);
+		Head->SetOwnerNoSee(false);
+
 		LeftHandObject->SetVisibility(false);
 		RightHandObject->SetVisibility(false);
 	}
@@ -92,6 +94,9 @@ void ADemoCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Camera->IsOwnerNoSeeChangedDelegate.AddDynamic(this, &ThisClass::OnIsNoSeeChanged);
+
+	LeftHandObject->SetVisibility(IsLocallyControlled() ? true : false, true);
+	RightHandObject->SetVisibility(IsLocallyControlled() ? true : false, true);
 }
 
 void ADemoCharacter::OnIsNoSeeChanged(bool bIsOwnerNoSee)
@@ -99,7 +104,6 @@ void ADemoCharacter::OnIsNoSeeChanged(bool bIsOwnerNoSee)
 	Body->SetOwnerNoSee(bIsOwnerNoSee);
 	Head->SetOwnerNoSee(bIsOwnerNoSee);
 }
-
 
 void ADemoCharacter::OnHitActionComplete()
 {
@@ -142,11 +146,32 @@ void ADemoCharacter::OnHitActionComplete()
 
 void ADemoCharacter::HitBlock(const FHitResult& HitResult)
 {
-	AMCChunkBase* HitChunk = Cast<AMCChunkBase>(HitResult.GetActor());
-	check(HitChunk);
+	if (HasAuthority())
+	{
+		Multicast_HitBlock(HitResult);
+	}
+	else
+	{
+		Server_HitBlock(HitResult);
+	}
+}
 
-	HitChunk->ModifyVoxel(
-		UMCVoxelUtilsLibrary::WorldToLocalBlockPosition(HitResult.Location - HitResult.Normal, HitChunk->GetChunkSize()),
-		EMCBlock::Air
-	);
+void ADemoCharacter::Server_HitBlock_Implementation(const FHitResult HitResult)
+{
+	Multicast_HitBlock(HitResult);
+}
+
+void ADemoCharacter::Multicast_HitBlock_Implementation(const FHitResult HitResult)
+{
+
+
+	AMCChunkBase* HitChunk = Cast<AMCChunkBase>(HitResult.GetActor());
+	//check(HitChunk);
+	if (HitChunk)
+	{
+		HitChunk->ModifyVoxel(
+			UMCVoxelUtilsLibrary::WorldToLocalBlockPosition(HitResult.Location - HitResult.Normal, HitChunk->GetChunkSize()),
+			EMCBlock::Air
+		);
+	}
 }

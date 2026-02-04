@@ -19,7 +19,5 @@ class MINECRAFTPLUGIN_API AMCVoxelGameMode : public AGameMode
 public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
-private:
-	void AddInitialItems(TScriptInterface<IMCInventoryInterface> TargetInventory);
 	
 };

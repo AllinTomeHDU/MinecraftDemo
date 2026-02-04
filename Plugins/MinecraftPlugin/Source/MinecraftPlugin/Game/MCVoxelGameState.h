@@ -10,6 +10,9 @@
 class UMCItemDatabase;
 class UMCPlayerInventory;
 class UMCInventoryVisualizerWidget;
+class IMCInventoryInterface;
+
+DECLARE_MULTICAST_DELEGATE(FOnPlayerInventoryReady);
 
 /**
  * 
@@ -18,7 +21,21 @@ UCLASS()
 class MINECRAFTPLUGIN_API AMCVoxelGameState : public AGameState
 {
 	GENERATED_BODY()
-	
+
+public:
+	AMCVoxelGameState();
+
+	FOnPlayerInventoryReady OnPlayerInventoryReadyDelegate;
+
+	void InializePlayerInstoryData();
+
+protected:
+	void AddInitialItems(TScriptInterface<IMCInventoryInterface> TargetInventory);
+
+protected:
+	virtual void PostInitializeComponents() override;
+
+private:
 	UPROPERTY(EditDefaultsOnly, Category = "Minecraft")
 	UMCItemDatabase* ItemInfoDatabase;
 
@@ -33,7 +50,15 @@ class MINECRAFTPLUGIN_API AMCVoxelGameState : public AGameState
 	
 public:
 	FORCEINLINE UMCItemDatabase* GetItemInfoDatabase() const { return ItemInfoDatabase; }
-	FORCEINLINE UMCInventoryDatabase& GetInventoryDatabase();
+	FORCEINLINE UMCInventoryDatabase& GetInventoryDatabase()
+	{
+		if (!IsValid(MainInventoryDatabase))
+		{
+			MainInventoryDatabase = NewObject<UMCInventoryDatabase>();
+			MainInventoryDatabase->Initialize();
+		}
+		return *MainInventoryDatabase;
+	}
 
 	FORCEINLINE UMCPlayerInventory* GetPlayerInventory() const { return MainPlayerInventory; }
 	FORCEINLINE void SetPlayerInventory(UMCPlayerInventory* NewInventory) { MainPlayerInventory = NewInventory; }

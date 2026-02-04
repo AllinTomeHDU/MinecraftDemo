@@ -20,11 +20,9 @@ void UMCPlayerHotbarWidget::NativeOnInitialized()
 	{
 		RepresentedPlayerInventory = GS->GetPlayerInventory();
 		InventoryVisualizerWidget = GS->GetInventoryVisualizer();
-
-		SpawnSlots();
-		UpdateItems();
-		if (!CreatedSlots.IsEmpty())
+		if (SpawnSlots())
 		{
+			UpdateItems();
 			WBP_MC_HotbarCursor->AnimateToNewParent(CreatedSlots[0]->GetHotbarCursorParent());
 		}
 	}
@@ -71,9 +69,9 @@ void UMCPlayerHotbarWidget::UpdateItems()
 	}
 }
 
-void UMCPlayerHotbarWidget::SpawnSlots()
+bool UMCPlayerHotbarWidget::SpawnSlots()
 {
-	if (!IsValid(RepresentedPlayerInventory) || !IsValid(InventoryVisualizerWidget)) return;
+	if (!IsValid(RepresentedPlayerInventory) || !IsValid(InventoryVisualizerWidget)) return false;
 
 	if (!CreatedSlots.IsEmpty())
 	{
@@ -90,4 +88,5 @@ void UMCPlayerHotbarWidget::SpawnSlots()
 		WrapBox_SlotParent->AddChild(NewSlotWidget);
 		CreatedSlots.Add(NewSlotWidget);
 	}
+	return !CreatedSlots.IsEmpty();
 }

@@ -33,6 +33,12 @@ protected:
 private:
 	void HitBlock(const FHitResult& HitResult);
 
+	UFUNCTION(Server, Reliable)
+	void Server_HitBlock(const FHitResult HitResult);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_HitBlock(const FHitResult HitResult);
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class USkeletalMeshComponent* Body;

@@ -28,7 +28,7 @@ protected:
 	virtual void NativeOnInitialized() override;
 
 private:
-	void SpawnSlots();
+	bool SpawnSlots();
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Minecraft")
