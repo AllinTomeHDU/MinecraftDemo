@@ -8,6 +8,7 @@
 
 AMCChunkBase::AMCChunkBase()
 {
+	bReplicates = true;
 	PrimaryActorTick.bCanEverTick = false;
 
 	Mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProceduralMesh"));

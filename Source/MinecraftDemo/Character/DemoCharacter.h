@@ -31,13 +31,13 @@ protected:
 	void OnHitActionComplete();
 
 private:
-	void HitBlock(const FHitResult& HitResult);
+	void HitBlock(const FVector& TraceStart, const FVector& TraceEnd);
 
 	UFUNCTION(Server, Reliable)
-	void Server_HitBlock(const FHitResult HitResult);
+	void Server_HitBlock(const FVector TraceStart, const FVector TraceEnd);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_HitBlock(const FHitResult HitResult);
+	void Multicast_HitBlock(const FVector TraceStart, const FVector TraceEnd);
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))

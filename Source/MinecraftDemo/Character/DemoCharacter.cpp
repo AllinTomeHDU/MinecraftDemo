@@ -119,54 +119,46 @@ void ADemoCharacter::OnHitActionComplete()
 	{
 		FVector Start = WorldOrigin;
 		FVector End = Start + (WorldDirection * 2000.f);
-
-		FHitResult HitResult;
-		bool bHit = UKismetSystemLibrary::LineTraceSingle(
-			GetWorld(),
-			Start,
-			End,
-			UEngineTypes::ConvertToTraceType(ECC_Visibility),
-			false,
-			{},
-			EDrawDebugTrace::None,
-			HitResult,
-			true
-		);
-		if (!bHit) return;
-
-		if (HitResult.GetActor()->ActorHasTag(AMCChunkManager::DefaultChunkTag))
-		{
-			if (FVector::Dist(HitResult.ImpactPoint, GetActorLocation()) < HitDistance)
-			{
-				HitBlock(HitResult);
-			}
-		}
+		HitBlock(Start, End);
+		
 	}
 }
 
-void ADemoCharacter::HitBlock(const FHitResult& HitResult)
+void ADemoCharacter::HitBlock(const FVector& TraceStart, const FVector& TraceEnd)
 {
 	if (HasAuthority())
 	{
-		Multicast_HitBlock(HitResult);
+		Multicast_HitBlock(TraceStart, TraceEnd);
 	}
 	else
 	{
-		Server_HitBlock(HitResult);
+		Server_HitBlock(TraceStart, TraceEnd);
 	}
 }
 
-void ADemoCharacter::Server_HitBlock_Implementation(const FHitResult HitResult)
+void ADemoCharacter::Server_HitBlock_Implementation(const FVector TraceStart, const FVector TraceEnd)
 {
-	Multicast_HitBlock(HitResult);
+	Multicast_HitBlock(TraceStart, TraceEnd);
 }
 
-void ADemoCharacter::Multicast_HitBlock_Implementation(const FHitResult HitResult)
+void ADemoCharacter::Multicast_HitBlock_Implementation(const FVector TraceStart, const FVector TraceEnd)
 {
-
-
+	FHitResult HitResult;
+	bool bHit = UKismetSystemLibrary::LineTraceSingle(
+		GetWorld(),
+		TraceStart,
+		TraceEnd,
+		UEngineTypes::ConvertToTraceType(ECC_Visibility),
+		false,
+		{},
+		EDrawDebugTrace::None,
+		HitResult,
+		true
+	);
+	if (!bHit) return;
+	if (!HitResult.GetActor()->ActorHasTag(AMCChunkManager::DefaultChunkTag)) return;
+	if (FVector::Dist(HitResult.ImpactPoint, GetActorLocation()) > HitDistance) return;
 	AMCChunkBase* HitChunk = Cast<AMCChunkBase>(HitResult.GetActor());
-	//check(HitChunk);
 	if (HitChunk)
 	{
 		HitChunk->ModifyVoxel(
@@ -174,4 +166,5 @@ void ADemoCharacter::Multicast_HitBlock_Implementation(const FHitResult HitResul
 			EMCBlock::Air
 		);
 	}
+
 }

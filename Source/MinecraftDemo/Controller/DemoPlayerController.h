@@ -33,6 +33,14 @@ protected:
 	void RightMouseAction();
 	void PlaceBlock(AMCChunkBase* Chunk, const FVector& WorldPos, const FVector& HitNormal, EMCBlock Block);
 
+	void PlaceBlock(const FVector& TraceStart, const FVector& TraceEnd);
+
+	UFUNCTION(Server, Reliable)
+	void Server_PlaceBlock(const FVector TraceStart, const FVector TraceEnd);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlaceBlock(const FVector TraceStart, const FVector TraceEnd);
+
 	void InventoryActoin();
 	void UpdateInteractInputMode(const bool bIsDisplayed);
 

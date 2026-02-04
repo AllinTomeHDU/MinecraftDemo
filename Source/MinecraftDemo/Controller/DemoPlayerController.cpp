@@ -80,7 +80,6 @@ void ADemoPlayerController::RightMouseAction()
 			true
 		);
 		if (!bHit) return;
-
 		if (HitResult.GetActor()->ActorHasTag(AMCChunkManager::DefaultChunkTag))
 		{
 			if (FVector::Dist(HitResult.ImpactPoint, Chr->GetActorLocation()) < 500.f)
@@ -108,15 +107,7 @@ void ADemoPlayerController::RightMouseAction()
 					}
 					default:
 					{
-						UMCItem* RemovedItem;
-						auto PlayerInventory = GS->GetPlayerInventory();
-						if (PlayerInventory->RemoveNumberFrom(PlayerInventory->GetCurrentlySelectedHotbarSlotCoords(), 1, RemovedItem))
-						{
-							auto Block = GS->GetItemInfoDatabase()->GetItemInfo(RemovedItem->GetAssociatedItemID()).BlockType;
-							PlaceBlock(HitChunk, HitResult.Location - HitResult.Normal, HitResult.Normal, Block);
-							Cast<AMCVoxelHUD>(GetHUD())->GetPlayerHotbar()->UpdateItems();
-						}
-						break;
+						PlaceBlock(Start, End);
 					}
 				}
 			}
@@ -141,6 +132,57 @@ void ADemoPlayerController::PlaceBlock(AMCChunkBase* Chunk, const FVector& World
 			Block
 		);
 		break;
+	}
+}
+
+void ADemoPlayerController::PlaceBlock(const FVector& TraceStart, const FVector& TraceEnd)
+{
+	if (HasAuthority())
+	{
+		Multicast_PlaceBlock(TraceStart, TraceEnd);
+	}
+	else
+	{
+		Server_PlaceBlock(TraceStart, TraceEnd);
+	}
+}
+
+void ADemoPlayerController::Server_PlaceBlock_Implementation(const FVector TraceStart, const FVector TraceEnd)
+{
+	Multicast_PlaceBlock(TraceStart, TraceEnd);
+}
+
+void ADemoPlayerController::Multicast_PlaceBlock_Implementation(const FVector TraceStart, const FVector TraceEnd)
+{
+	FHitResult HitResult;
+	bool bHit = UKismetSystemLibrary::LineTraceSingle(
+		GetWorld(),
+		TraceStart,
+		TraceEnd,
+		UEngineTypes::ConvertToTraceType(ECC_Visibility),
+		false,
+		{},
+		EDrawDebugTrace::None,
+		HitResult,
+		true
+	);
+	if (!bHit) return;
+	if (!HitResult.GetActor()->ActorHasTag(AMCChunkManager::DefaultChunkTag)) return;
+	if (FVector::Dist(HitResult.ImpactPoint, Chr->GetActorLocation()) > 500.f) return;
+
+	auto GS = Cast<AMCVoxelGameState>(GetWorld()->GetGameState());
+	AMCChunkBase* HitChunk = Cast<AMCChunkBase>(HitResult.GetActor());
+	
+	UMCItem* RemovedItem;
+	auto PlayerInventory = GS->GetPlayerInventory();
+	if (PlayerInventory->RemoveNumberFrom(PlayerInventory->GetCurrentlySelectedHotbarSlotCoords(), 1, RemovedItem))
+	{
+		auto Block = GS->GetItemInfoDatabase()->GetItemInfo(RemovedItem->GetAssociatedItemID()).BlockType;
+		PlaceBlock(HitChunk, HitResult.Location - HitResult.Normal, HitResult.Normal, Block);
+		if (IsLocalController())
+		{
+			Cast<AMCVoxelHUD>(GetHUD())->GetPlayerHotbar()->UpdateItems();
+		}
 	}
 }
 
