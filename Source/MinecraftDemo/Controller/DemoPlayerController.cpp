@@ -4,16 +4,10 @@
 #include "DemoPlayerController.h"
 #include "MinecraftDemo/Character/DemoCharacter.h"
 #include "MinecraftPlugin/Game/MCVoxelGameState.h"
+#include "MinecraftPlugin/Inventory/MCPlayerInventory.h"
 #include "MinecraftPlugin/UI/HUD/MCVoxelHUD.h"
 #include "MinecraftPlugin/UI/Widget/Inventory/MCInventoryVisualizerWidget.h"
 #include "MinecraftPlugin/UI/Widget/Inventory/MCPlayerHotbarWidget.h"
-#include "MinecraftPlugin/Actor/Chunk/MCChunkManager.h"
-#include "MinecraftPlugin/Actor/Chunk/MCChunkBase.h"
-#include "MinecraftPlugin/Inventory/MCPlayerInventory.h"
-#include "MinecraftPlugin/Inventory/MCInventoryInterface.h"
-#include "MinecraftPlugin/Inventory/Item/MCItem.h"
-#include "MinecraftPlugin/Inventory/Item/MCItemDatabase.h"
-#include "MinecraftPlugin/Library/MCVoxelUtilsLibrary.h"
 #include "MotionMatchingAls/3C/Character/MMAlsCharacter.h"
 #include "MotionMatchingAls/3C/Camera/MMAlsCameraComponent.h"
 #include "Room/MultiplayerRoomSubsystem.h"
@@ -43,6 +37,7 @@ void ADemoPlayerController::SetupInputComponent()
 		EnhancedInputComp->BindAction(IA_Inventory, ETriggerEvent::Started, this, &ThisClass::InventoryActoin);
 		EnhancedInputComp->BindAction(IA_HotbarCursor, ETriggerEvent::Started, this, &ThisClass::HotbarCursorActrion);
 		EnhancedInputComp->BindAction(IA_CameraMode, ETriggerEvent::Started, this, &ThisClass::ToggleViewModeAction);
+		EnhancedInputComp->BindAction(IA_LocomotionMode, ETriggerEvent::Started, this, &ThisClass::ToggleLocomotionMode);
 	}
 
 	auto Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
@@ -211,5 +206,13 @@ void ADemoPlayerController::ToggleViewModeAction()
 				Cast<ADemoCharacter>(Chr)->UpdateMeshesRenderingMode();
 			}
 		}
+	}
+}
+
+void ADemoPlayerController::ToggleLocomotionMode()
+{
+	if (Cast<ADemoCharacter>(Chr))
+	{
+		Cast<ADemoCharacter>(Chr)->ToggleLocomotionMode();
 	}
 }

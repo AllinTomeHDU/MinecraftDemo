@@ -34,6 +34,7 @@ protected:
 	void InventoryActoin();
 	void HotbarCursorActrion(const FInputActionValue& Value);
 	void ToggleViewModeAction();
+	void ToggleLocomotionMode();
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Demo")
@@ -59,6 +60,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Inputs|Demo")
 	UInputAction* IA_CameraMode;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Inputs|Demo")
+	UInputAction* IA_LocomotionMode;
 
 	UPROPERTY(EditAnywhere)
 	float Reach = 4.f * 100.f;

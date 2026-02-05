@@ -29,6 +29,8 @@ public:
 	void SetHandsObjectVisibility(const bool bVisible);
 	void SetBodyOwnerNoSee(const bool bIsNoSee);
 
+	void ToggleLocomotionMode();
+
 	UPROPERTY(BlueprintAssignable)
 	FOnHitBlockActionSignature OnHitBlockActionDelegate;
 
@@ -36,8 +38,12 @@ public:
 	FOnPlaceBlockActionSignature OnPlaceBlockActionDelegate;
 
 protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual void BeginPlay() override;
+
+	UFUNCTION(Server, Reliable)
+	void Server_ToggleLocomotionMode(const bool bMotionMatching);
 
 	UFUNCTION()
 	void OnIsNoSeeChanged(bool bIsOwnerNoSee);
@@ -84,6 +90,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* RightHandObject;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "MC|Settings", meta = (AllowPrivateAccess = "true"))
+	bool bUseMotionMatching{ false };
 
 	UPROPERTY(EditAnywhere, Category = "MC|Settings")
 	bool bForceHideHandsObject{ false };

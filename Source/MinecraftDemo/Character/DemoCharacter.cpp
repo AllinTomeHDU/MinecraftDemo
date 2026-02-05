@@ -20,6 +20,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 
 ADemoCharacter::ADemoCharacter(const FObjectInitializer& ObjectInitializer)
@@ -55,6 +56,13 @@ ADemoCharacter::ADemoCharacter(const FObjectInitializer& ObjectInitializer)
 	RightHandObject->SetupAttachment(RightHandScene);
 }
 
+void ADemoCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(ADemoCharacter, bUseMotionMatching, COND_SkipOwner);
+}
+
 void ADemoCharacter::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
@@ -83,11 +91,17 @@ void ADemoCharacter::UpdateMeshesRenderingMode()
 	{
 		Body->SetOwnerNoSee(true);
 		Head->SetOwnerNoSee(true);
+
+		LeftHandObject->SetVisibility(bForceHideHandsObject ? false : true, true);
+		RightHandObject->SetVisibility(bForceHideHandsObject ? false : true, true);
 	}
 	else
 	{
 		Body->SetOwnerNoSee(false);
 		Head->SetOwnerNoSee(false);
+
+		LeftHandObject->SetVisibility(false, true);
+		RightHandObject->SetVisibility(false, true);
 	}
 }
 
@@ -101,6 +115,20 @@ void ADemoCharacter::SetBodyOwnerNoSee(const bool bIsNoSee)
 {
 	Body->SetOwnerNoSee(bIsNoSee);
 	Head->SetOwnerNoSee(bIsNoSee);
+}
+
+void ADemoCharacter::ToggleLocomotionMode()
+{
+	bUseMotionMatching = !bUseMotionMatching;
+	if (!HasAuthority())
+	{
+		Server_ToggleLocomotionMode(bUseMotionMatching);
+	}
+}
+
+void ADemoCharacter::Server_ToggleLocomotionMode_Implementation(const bool bMotionMatching)
+{
+	bUseMotionMatching = bMotionMatching;
 }
 
 void ADemoCharacter::BeginPlay()
@@ -123,8 +151,9 @@ void ADemoCharacter::BeginPlay()
 
 void ADemoCharacter::OnIsNoSeeChanged(bool bIsOwnerNoSee)
 {
-	Body->SetOwnerNoSee(bIsOwnerNoSee);
-	Head->SetOwnerNoSee(bIsOwnerNoSee);
+	bool bIsFirstPerson = Camera->GetViewMode() == EMMAlsViewMode::FirstPerson;
+	Body->SetOwnerNoSee(bIsFirstPerson ? true : bIsOwnerNoSee);
+	Head->SetOwnerNoSee(bIsFirstPerson ? true : bIsOwnerNoSee);
 }
 
 void ADemoCharacter::OnHitActionComplete()
@@ -179,9 +208,18 @@ void ADemoCharacter::Multicast_HitBlock_Implementation(const FVector TraceStart,
 	if (!bHit) return;
 	if (!HitResult.GetActor()->ActorHasTag(AMCChunkManager::DefaultChunkTag)) return;
 	if (FVector::Dist(HitResult.ImpactPoint, GetActorLocation()) > HitDistance) return;
+	AMCVoxelGameState* GS = Cast<AMCVoxelGameState>(GetWorld()->GetGameState());
 	AMCChunkBase* HitChunk = Cast<AMCChunkBase>(HitResult.GetActor());
 	if (HitChunk)
 	{
+		EMCBlock HitBlock = HitChunk->GetBlock(
+			UMCVoxelUtilsLibrary::WorldToLocalBlockPosition(HitResult.Location - HitResult.Normal, HitChunk->GetChunkSize())
+		);
+
+		UMCItem* WorldItem = NewObject<UMCItem>();
+		WorldItem->Initialize(GS->GetItemInfoDatabase()->GetItemID(HitBlock), 1);
+		GS->GetPlayerInventory()->InsertAnywhereStacked(WorldItem);
+
 		HitChunk->ModifyVoxel(
 			UMCVoxelUtilsLibrary::WorldToLocalBlockPosition(HitResult.Location - HitResult.Normal, HitChunk->GetChunkSize()),
 			EMCBlock::Air
