@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{E0F0BF2A-4382-D8EE-4638-85AE8B0FC2F5}",
+	"EngineAssociation": "5.6",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -21,10 +21,6 @@
 			"TargetAllowList": [
 				"Editor"
 			]
-		},
-		{
-			"Name": "MultiplayerOnlineSystem",
-			"Enabled": true
 		},
 		{
 			"Name": "MotionMatchingAls",

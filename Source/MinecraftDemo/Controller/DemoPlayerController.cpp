@@ -10,7 +10,7 @@
 #include "MinecraftPlugin/UI/Widget/Inventory/MCPlayerHotbarWidget.h"
 #include "MotionMatchingAls/3C/Character/MMAlsCharacter.h"
 #include "MotionMatchingAls/3C/Camera/MMAlsCameraComponent.h"
-#include "Room/MultiplayerRoomSubsystem.h"
+//#include "Room/MultiplayerRoomSubsystem.h"
 #include "GameFramework/PlayerStart.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
@@ -56,24 +56,24 @@ void ADemoPlayerController::BeginPlay()
 		SetInputMode(FInputModeGameOnly());
 		SetShowMouseCursor(false);
 
-		if (auto RoomSubsystem = GetGameInstance()->GetSubsystem<UMultiplayerRoomSubsystem>())
-		{
-			if (UClass* InClass = RoomSubsystem->GetSavedCharacterClass())
-			{
-				Server_SpawnHeroCharacter(InClass);
-			}
-			if (!GetCharacter() && IsValid(DefaultCharacter))
-			{
-				Server_SpawnHeroCharacter(DefaultCharacter);
-			}
-		}
-		else
-		{
-			if (!GetCharacter() && IsValid(DefaultCharacter))
-			{
-				Server_SpawnHeroCharacter(DefaultCharacter);
-			}
-		}
+		//if (auto RoomSubsystem = GetGameInstance()->GetSubsystem<UMultiplayerRoomSubsystem>())
+		//{
+		//	if (UClass* InClass = RoomSubsystem->GetSavedCharacterClass())
+		//	{
+		//		Server_SpawnHeroCharacter(InClass);
+		//	}
+		//	if (!GetCharacter() && IsValid(DefaultCharacter))
+		//	{
+		//		Server_SpawnHeroCharacter(DefaultCharacter);
+		//	}
+		//}
+		//else
+		//{
+		//	if (!GetCharacter() && IsValid(DefaultCharacter))
+		//	{
+		//		Server_SpawnHeroCharacter(DefaultCharacter);
+		//	}
+		//}
 
 		if (auto DemoChr = Cast<ADemoCharacter>(GetPawn()))
 		{
