@@ -18,7 +18,7 @@ UMMAlsDebugComponent::UMMAlsDebugComponent()
 
 void UMMAlsDebugComponent::InitDebugOverlay()
 {
-	if (CharacterOwner->IsLocallyControlled())
+	if (CharacterOwner && CharacterOwner->IsLocallyControlled())
 	{
 		if (IsValid(DebugOverlayClass) && !IsValid(DebugOverlay))
 		{
